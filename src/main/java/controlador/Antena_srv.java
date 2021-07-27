@@ -81,8 +81,8 @@ public class Antena_srv extends HttpServlet {
                         + "                                                Seleccione Accion\n"
                         + "                                            </button>\n"
                         + "                                            <div class=\"dropdown-menu dropdown-menu-right\" aria-labelledby=\"dropdownMenuButton\">\n"
-                        + "                                                <a id='btnEditar' class=\"dropdown-item\" href='EditarAntena?id=" + antena.getIdAntena() + "' title=\"Editar\">Editar</a>\n"
-                        + "                                                <a id='btnEliminar' class=\"dropdown-item\" href='EliminarAntena?id=" + antena.getIdAntena() + "' title=\"Eliminar\">Eliminar</a>\n"
+                        + "                                                <a id='btnEditar' class=\"dropdown-item\" href='" + antena.getIdAntena() + "' title=\"Editar\">Editar</a>\n"
+                        + "                                                <a id='btnEliminar' class=\"dropdown-item\" href='" + antena.getIdAntena() + "' title=\"Eliminar\">Eliminar</a>\n"
                         + "\n"
                         + "                                            </div>\n"
                         + "                                        </div>\n"
@@ -93,21 +93,115 @@ public class Antena_srv extends HttpServlet {
         }
         if (path.equals("/EditarAntena")) {
             int id = Integer.parseInt(request.getParameter("id"));
+            ArrayList<Torre> lista_torre = Torredao.listarTorres();
+            ArrayList<Servidor> lista_servidor = Servidordao.listarServidores();
+            ArrayList<TipoAntena> lista_tipo = TipoAntenadao.listarTipos();
+            String result = null;
             Antena ant = Antenadao.listarAntenasId(id);
-            request.setAttribute("antena", ant);
-            request.getRequestDispatcher("antena.jsp").forward(request, response);
+            out.write("<div class=\"modal-dialog\" role=\"document\">\n"
+                    + "                <div class=\"modal-content\">\n"
+                    + "                    <div class=\"modal-header\">\n"
+                    + "                        <h5 class=\"modal-title\" id=\"exampleModalLabel\">Edicion de Antena</h5>\n"
+                    + "                        <button type=\"button\" class=\"close\" data-dismiss=\"modal\" aria-label=\"Close\">\n"
+                    + "                            <span aria-hidden=\"true\">&times;</span>\n"
+                    + "                        </button>\n"
+                    + "                    </div>\n"
+                    + "	<form  id=\"formUp\" action=\"ActualizarAntena\" method=\"POST\">\n"
+                    + "                        <div class=\"modal-body\">\n"
+                    + "                            <div class=\"form-group\">\n"
+                    + "                                <label for=\"nombre\" style=\"color: black\">Ingrese su nombre de la antena:</label>\n"
+                    + "                                <input name=\"nomAntena\" style=\"color: black;\" type=\"text\" placeholder=\"Nombre Antena\" class=\"field\" required value='" + ant.getNombreAntena() + "'><br>\n"
+                    + "                                <input type=\"hidden\" name=\"idAntena\" value='" + ant.getIdAntena() + "'>\n"
+                    + "                            </div>\n"
+                    + "                            <div class=\"form-group\">\n"
+                    + "                                <label for=\"nombre\" style=\"color: black\">Ingrese su IP:</label>\n"
+                    + "                                <input name=\"ip\" style=\"color: black;\" type=\"text\" placeholder=\"Ip\" class=\"field\" required value='" + ant.getIp() + "'><br>\n"
+                    + "                            </div>\n"
+                    + "                            <div class=\"form-group\">\n"
+                    + "                                <label for=\"nombre\" style=\"color: black\">ingrese su Mac:</label>\n"
+                    + "                                <input name=\"mac\" style=\"color: black;\" type=\"text\" placeholder=\"Mac\" class=\"field\" required value='" + ant.getMac() + "'><br>\n"
+                    + "                            </div>\n"
+                    + "                            <div class=\"form-group\">\n"
+                    + "                                <label for=\"nombre\" style=\"color: black\">Ingrese su Frecuencia:</label>\n"
+                    + "                                <input name=\"frecuencia\" style=\"color: black;\" type=\"text\" placeholder=\"Frecuencia\" class=\"field\" required value='" + ant.getFrecuencia() + "'><br> \n"
+                    + "                            </div>\n"
+                    + "                            <div class=\"form-group\">\n"
+                    + "                                <label for=\"nombre\" style=\"color: black\">Ingrese su Canal:</label>\n"
+                    + "                                <input name=\"canal\" style=\"color: black;\" type=\"text\" placeholder=\"Canal\" class=\"field\" required value='" + ant.getCanal() + "'><br>\n"
+                    + "                            </div>\n"
+                    + "                            <div class=\"form-group\">\n"
+                    + "                                <label for=\"nombre\" style=\"color: black\">Ingrese su password configuracion:</label>\n"
+                    + "                                <input name=\"passConfig\" style=\"color: black;\" type=\"text\" placeholder=\"Password Configuracion\" class=\"field\" value='" + ant.getPasswConfig() + "' required><br>\n"
+                    + "                            </div>\n"
+                    + "                            <div class=\"form-group\">\n"
+                    + "                                <label for=\"nombre\" style=\"color: black\">Ingrese su password conexion:</label>\n"
+                    + "                                <input name=\"passConec\" style=\"color: black;\" type=\"text\" placeholder=\"Password Conexion\" class=\"field\" value='" + ant.getPasswConeccion() + "' required><br>\n"
+                    + "                            </div>");
+            out.write("  <div class=\"form-group\">\n"
+                    + "                                <label for=\"nombre\" style=\"color: black\">Ingrese su Servidor:</label>\n"
+                    + "                                <select id=\"country\" name=\"cmbo_servidor\" onchange=\"change_country(this.value)\" class=\"frm-field required\">");
+            for (Servidor servidor : lista_servidor) {
+                out.write(" <option ");
+                if (servidor.getIdServidor() == ant.getIdServidor()) {
+                    result = "selected";
+                } else {
+                    result = "";
+                }
+                out.write(result + " " + "value=" + servidor.getIdServidor() + ">" + servidor.getNombreServidor() + "</option> ");
+            }
+            out.write(" </select>\n"
+                    + "                            </div>");
+            out.write("<div class=\"form-group\">\n"
+                    + "                                <label for=\"nombre\" style=\"color: black\">Ingrese su Torre:</label>\n"
+                    + "                                <select id=\"country\" name=\"cmbo_torre\" onchange=\"change_country(this.value)\" class=\"frm-field required\">");
+            for (Torre torre : lista_torre) {
+                out.write(" <option ");
+                if (torre.getIdTorre() == ant.getIdTorre()) {
+                    result = "selected";
+                } else {
+                    result = "";
+                }
+                out.write(result + " " + "value=" + torre.getIdTorre() + ">" + torre.getNombreTorre() + "</option>  ");
+            }
+            out.write(" </select>\n"
+                    + "                            </div>");
+            out.write(" <div class=\"form-group\">\n"
+                    + "                                <label for=\"nombre\" style=\"color: black\">Tipo de antena:</label>\n"
+                    + "                                <select id=\"country\" name=\"cmbo_tipos\" onchange=\"change_country(this.value)\" class=\"frm-field required\">");
+            for (TipoAntena tipoAntena : lista_tipo) {
+                out.write(" <option ");
+                if (tipoAntena.getIdtipo() == ant.getIdTipo()) {
+                    result = "selected";
+                } else {
+                    result = "";
+                }
+                out.write(result + " " + "value=" + tipoAntena.getIdtipo() + ">" + tipoAntena.getTipoAntena() + "</option>  ");
+            }
+            out.write(" </select>\n"
+                    + "                            </div>\n"
+                    + "                        </div>\n"
+                    + "\n"
+                    + "                        <div class=\"modal-footer\">\n"
+                    + "                            <button type=\"button\" class=\"btn btn-primary\" data-dismiss=\"modal\">Close</button>\n"
+                    + "                            <button type=\"button\" class=\"btn btn-warning\" style=\"float: right; color: white;\" id=\"btnActualizar\">Actualizar</button>\n"
+                    + "                        </div>\n"
+                    + "                    </form>\n"
+                    + "                </div>\n"
+                    + "            </div>");
         }
-        if (path.equals("/EliminarAntena")) {
+
+        if (path.equals(
+                "/EliminarAntena")) {
             int id = Integer.parseInt(request.getParameter("id"));
             if (Antenadao.deleteAntena(id)) {
-                request.setAttribute("msg", "Eliminado");
-                request.getRequestDispatcher("antena.jsp").forward(request, response);
+                out.write("Eliminado");
             } else {
-                request.setAttribute("msg", "No eliminado");
-                request.getRequestDispatcher("antena.jsp").forward(request, response);
+                out.write("No eliminado");
             }
         }
-        if (path.equals("/AgregarAntena")) {
+
+        if (path.equals(
+                "/AgregarAntena")) {
             String nomAntena = request.getParameter("nomAntena").toUpperCase();
             String ip = request.getParameter("ip");
             String mac = request.getParameter("mac");
@@ -134,7 +228,9 @@ public class Antena_srv extends HttpServlet {
                 out.write("FALSE");
             }
         }
-        if (path.equals("/ActualizarAntena")) {
+
+        if (path.equals(
+                "/ActualizarAntena")) {
             int id = Integer.parseInt(request.getParameter("idAntena"));
             String nomAntena = request.getParameter("nomAntena").toUpperCase();
             String ip = request.getParameter("ip");
@@ -165,7 +261,7 @@ public class Antena_srv extends HttpServlet {
         }
     }
 
-    // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
+// <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
     /**
      * Handles the HTTP <code>GET</code> method.
      *

@@ -71,13 +71,25 @@
         %>
         <script type="text/javascript">
             $(document).ready(function () {
+
+            <%if (us.getIdTipoUser() == 1) {%>
+                $("#usuario").show();
+                $("#principal").show();
+                $("#personal").show();
+                $("#mantenimiento").show();
+                $("#reporte").show();
+                $("#registro").show();
+            <%}%>
+            <%if (us.getIdTipoUser() == 2) {%>
+                $("#principal").show();
+                $("#registro").show();
+            <%}%>
+            <%if (us.getIdTipoUser() == 3) {%>
+                $("#principal").show();
+                $("#reporte").show();
+            <%}%>
                 $('#modalRegistro').find(".modal-header").css("background", "linear-gradient(to left, #f5af19,#f5af19)");
                 $('#modalRegistro').find(".modal-header").css("color", "white");
-            <%if (servicio != null) {%>
-                $('#modalUpdate').find(".modal-header").css("background", "linear-gradient(to left, #f5af19,#f5af19)");
-                $('#modalUpdate').find(".modal-header").css("color", "white");
-                $("#modalUpdate").modal('show');
-            <%}%>
 
                 function dataTable() {
                     $('#tab').DataTable({
@@ -112,6 +124,50 @@
                         url: "ListarServicios",
                         success: function (response) {
                             $('#tab').html(response);
+                            $("tr #btnEliminar").click(function (e) {
+                                e.preventDefault();
+                                var id = $(this).attr("href");
+                                $.ajax({
+                                    type: "POST",
+                                    url: "EliminarServicios",
+                                    data: {id: id},
+                                    success: function (response) {
+                                         Swal.fire(response);
+                                         ListarServicio();
+                                    }
+                                });
+                            });
+                            $("tr #btnDetalle").click(function (e) {
+                                e.preventDefault();
+                                var id = $(this).attr("href");
+                                $.ajax({
+                                    type: "POST",
+                                    url: "DetalleServicio",
+                                    data: {id: id},
+                                    success: function (response) {
+                                        $("#modalDetalle").html(response);
+                                        $('#modalDetalle').find(".modal-header").css("background", "linear-gradient(to left, #f5af19,#f5af19)");
+                                        $('#modalDetalle').find(".modal-header").css("color", "white");
+                                        $("#modalDetalle").modal("show");
+                                    }
+                                });
+                            });
+                            $("tr #btnEditar").click(function (e) {
+                                e.preventDefault();
+                                var id = $(this).attr("href");
+                                $.ajax({
+                                    type: "POST",
+                                    url: "EditarServicios",
+                                    data: {id: id},
+                                    success: function (response) {
+                                        $("#modalUpdate").html(response);
+                                        $('#modalUpdate').find(".modal-header").css("background", "linear-gradient(to left, #f5af19,#f5af19)");
+                                        $('#modalUpdate').find(".modal-header").css("color", "white");
+                                        $("#modalUpdate").modal("show");
+                                        actualizarServicio();
+                                    }
+                                });
+                            });
                             dataTable();
                         }
                     });
@@ -184,7 +240,7 @@
                                     } else if (response == "FALSE") {
                                         Swal.fire('Cliente ya cuenta con un servicio')
                                     } else {
-                                        $("#nomCliente").val(response);
+                                        $("#NombreCliente").html(response);
                                         $("#forMostrar").show();
                                     }
                                 }
@@ -232,7 +288,6 @@
                 }
                 close();
                 ListarServicio();
-                actualizarServicio();
                 registrarServicio();
                 buscarCliente();
             });
@@ -278,7 +333,7 @@
                 font-size: 100%;
                 font: inherit;
                 vertical-align: baseline;
-               
+
                 color: white;
 
             }
@@ -396,10 +451,10 @@
                     </div>	
                     <div class="menu">
                         <ul>
-                            <li><a href="principal.jsp">Inicio</a></li>
-                            <li><a href="personal.jsp">Personal</a></li>
-                            <li><a href="usuarios.jsp">Usuarios</a></li>
-                            <li class="dropdown">
+                            <li id="principal" style="display: none"><a href="principal.jsp">Inicio</a></li>
+                            <li id="personal" style="display: none"><a href="personal.jsp">Personal</a></li>
+                            <li id="usuario" style="display: none"><a href="usuarios.jsp">Usuarios</a></li>
+                            <li id="registro" style="display: none" class="dropdown">
                                 <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                     Registro
                                 </a>
@@ -409,7 +464,7 @@
                                     <a class="dropdown-item" href="pagos.jsp">Pagos</a>
                                 </ul>
                             </li>
-                            <li class="dropdown">
+                            <li id="mantenimiento" style="display: none" class="dropdown">
                                 <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                     Mantenimiento
                                 </a>
@@ -419,7 +474,7 @@
                                     <a class="dropdown-item" href="antena.jsp">Antena</a>
                                 </ul>
                             </li>
-                            <li class="dropdown">
+                            <li id="reporte" style="display: none" class="dropdown">
                                 <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                     Reportes
                                 </a>
@@ -437,6 +492,9 @@
                 </div>
             </div>
         </div>
+        <div id="modalDetalle" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+
+        </div>
         <div  id="modalRegistro" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
             <div class="modal-dialog" role="document">
                 <div class="modal-content">
@@ -453,9 +511,7 @@
                                 <input id="dni" style="color: black" name="dniSol" style="width:100px;" type="text" placeholder="DNI" class="field" required>
                                 <button type="submit" class="btn btn-warning" style="float: right; color: white;" id="btnBuscar">Buscar</button>
                             </div><br>
-                            <div class="form-group">
-                                <label for="nombre" style="color: black">Cliente:</label>
-                                <input id="nomCliente" name="nomCliente" style="color: black" type="text" placeholder="Nombre" disabled required class="field"> 
+                            <div class="form-group" id="NombreCliente">
                             </div>
                             <div id="forMostrar" style="display: none">
                                 <div class="form-group">
@@ -536,155 +592,10 @@
                 </div>
             </div>
         </div> 
-        <%if (servicio != null) {%>
+       
         <div  id="modalUpdate" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-            <div class="modal-dialog" role="document">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="exampleModalLabel">Edicion de Servicio</h5>
-                        <button type="button" class="close" id="btnExit2" data-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                    </div>
-                    <<form  id="formUp" action="ActualizarAntena" method="POST">
-                        <div class="modal-body">
-                            <div class="form-group">
-                                <label for="nombre" style="color: black">Nombre del cliente:</label>
-                                <%  Cliente cliente = Clientedao.listarClienteId(servicio.getIdCliente());%>
-                                <input name="nomAntena" style="color: black;" type="text" placeholder="Nombre Antena" class="field" disabled  value="<%=cliente.getNombre()%> <%=cliente.getApellidoPaterno()%>"><br>
-                                <input type="hidden" name="idServicio" value="<%=servicio.getIdServicio()%>">
-                            </div>
-                            <div class="form-group">
-                                <label for="nombre" style="color: black">Fecha de Inicio:</label>
-                                <input name="fechaInicio" style="color: black" type="date"  value="<%=servicio.getF_inicio()%>"class="field" >
-                            </div>
-                            <div class="form-group">
-                                <label for="nombre" style="color: black">Fecha de Vencimiento:</label>
-                                <input name="fechaFin" style="color: black" type="date"  value="<%=servicio.getF_vencimiento()%>"class="field" >
-                            </div>
-                            <div class="form-group">
-                                <label for="nombre" style="color: black">Fecha de Corte:</label>
-                                <input name="fechaCorte" style="color: black" type="date"  value="<%=servicio.getF_corte()%>"class="field" >
-                            </div>
-                            <% String result = null;
-                            %>
-                            <div class="form-group">
-                                <label for="nombre" style="color: black">Seleccion IP:</label>
-                                <select id="country" name="cmbo_ip" onchange="change_country(this.value)" class="frm-field required">
-                                    <%for (int i = 0; i < lista_ip.size(); i++) {%>
-                                    <option 
-                                        <%
-                                            if (servicio.getIp().equals(lista_ip.get(i))) {
-                                                result = "selected";
-                                            } else {
-                                                result = "";
-                                            }
-
-                                        %>
-                                        <%=result%>value="<%=lista_ip.get(i)%>"><%=lista_ip.get(i)%></option>  
-                                    <%}%>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label for="nombre" style="color: black">Seleccion MAC:</label>
-                                <select id="country" name="cmbo_mac" onchange="change_country(this.value)" class="frm-field required">
-                                    <%for (int i = 0; i < lista_mac.size(); i++) {%>
-                                    <option 
-                                        <%
-                                            if (servicio.getMac().equals(lista_mac.get(i))) {
-                                                result = "selected";
-                                            } else {
-                                                result = "";
-                                            }
-
-                                        %>
-                                        <%=result%> value="<%=lista_mac.get(i)%>"><%=lista_mac.get(i)%></option>  
-                                    <%}%>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label for="nombre" style="color: black">Seleccion Frecuencia:</label>
-                                <select id="country" name="cmbo_frecuencia" onchange="change_country(this.value)" class="frm-field required">
-                                    <%for (int i = 0; i < lista_frecuencia.size(); i++) {%>
-                                    <option 
-                                        <%
-                                            if (servicio.getFrecuencia().equals(lista_frecuencia.get(i))) {
-                                                result = "selected";
-                                            } else {
-                                                result = "";
-                                            }
-
-                                        %>
-                                        <%=result%> value="<%=lista_frecuencia.get(i)%>"><%=lista_frecuencia.get(i)%></option>  
-                                    <%}%>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label for="nombre" style="color: black">Seleccione Ancho de Banda:</label>
-                                <select id="country" name="cmbo_anchoBanda" onchange="change_country(this.value)" class="frm-field required">
-                                    <%for (int i = 0; i < lista_bandas.size(); i++) {%>
-                                    <option 
-                                        <%
-                                            if (servicio.getAnchoBanda().equals(lista_bandas.get(i))) {
-                                                result = "selected";
-                                            } else {
-                                                result = "";
-                                            }
-
-                                        %>
-                                        <%=result%> value="<%=lista_bandas.get(i)%>"><%=lista_bandas.get(i)%></option>  
-                                    <%}%>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label for="nombre" style="color: black">Seleccione Antena:</label>
-                                <select id="country" name="cmbo_antena" onchange="change_country(this.value)" class="frm-field required">
-                                    <%for (Antena antena : lista_antena) { %>
-                                    <option   <%
-                                        if (servicio.getIdAntena() == antena.getIdAntena()) {
-                                            result = "selected";
-                                        } else {
-                                            result = "";
-                                        }
-                                        %>
-                                        <%=result%>
-                                        value=<%=antena.getIdAntena()%>><%=antena.getNombreAntena()%></option>
-                                    <%}%>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label for="nombre" style="color: black">Seleccione Marca de Antena:</label>
-                                <select id="country" name="cmbo_marca" onchange="change_country(this.value)" class="frm-field required">
-                                    <%for (MarcaAntena lista_marca : lista_marcas) {%>
-                                    <option 
-                                        <%
-                                            if (servicio.getIdMarca() == lista_marca.getIdMarca()) {
-                                                result = "selected";
-                                            } else {
-                                                result = "";
-                                            }
-                                        %>
-                                        <%=result%> value=<%=lista_marca.getIdMarca()%>><%=lista_marca.getMarca()%></option>
-                                    <%}%>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label for="nombre" style="color: black">Seleccione Condicion de Antena:</label>
-                                <select id="country" name="cmbo_condicion" onchange="change_country(this.value)" class="frm-field required">
-                                    <option value="Propia">Propia</option>  
-                                    <option value="Alquilada">Alquilada</option>     
-                                </select> 
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-primary" data-dismiss="modal" id="btnClose2">Close</button>
-                            <button type="button" class="btn btn-warning" style="float: right; color: white;" id="btnActualizar">Actualizar</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
+            
         </div> 
-        <%}%>
         <div class="main">
             <div class="wrap">
                 <div class="plans">

@@ -46,13 +46,26 @@
         %>
         <script type="text/javascript">
             $(document).ready(function () {
+
+            <%if (us.getIdTipoUser() == 1) {%>
+                $("#usuario").show();
+                $("#principal").show();
+                $("#personal").show();
+                $("#mantenimiento").show();
+                $("#reporte").show();
+                $("#registro").show();
+            <%}%>
+            <%if (us.getIdTipoUser() == 2) {%>
+                $("#principal").show();
+                $("#registro").show();
+            <%}%>
+            <%if (us.getIdTipoUser() == 3) {%>
+                $("#principal").show();
+                $("#reporte").show();
+            <%}%>
                 $('#modalRegistro').find(".modal-header").css("background", "linear-gradient(to left, #f5af19,#f5af19)");
                 $('#modalRegistro').find(".modal-header").css("color", "white");
-            <%if (pago != null) {%>
-                $('#modalUpdate').find(".modal-header").css("background", "linear-gradient(to left, #f5af19,#f5af19)");
-                $('#modalUpdate').find(".modal-header").css("color", "white");
-                $("#modalUpdate").modal('show');
-            <%}%>
+
                 function dataTable() {
                     $('#tab').DataTable({
                         responsive: true,
@@ -86,6 +99,21 @@
                         url: "ListarPagos",
                         success: function (response) {
                             $('#tab').html(response);
+                            $('tbody #btnDetalle').click(function (e) {
+                                e.preventDefault();
+                                var id = $(this).attr("href");
+                                $.ajax({
+                                    type: "POST",
+                                    url: "DetallePago",
+                                    data: {id: id},
+                                    success: function (response) {
+                                        $("#modalDetalle").html(response);
+                                        $('#modalDetalle').find(".modal-header").css("background", "linear-gradient(to left, #f5af19,#f5af19)");
+                                        $('#modalDetalle').find(".modal-header").css("color", "white");
+                                        $("#modalDetalle").modal("show");
+                                    }
+                                });
+                            });
                             dataTable();
                         }
                     });
@@ -93,41 +121,50 @@
                 function registrarPagos() {
                     $('#btnRegistrar').click(function (e) {
                         e.preventDefault();
-                        var data = $('#form').serialize();
-                        $.ajax({
-                            type: "POST",
-                            url: "AgregarPagos",
-                            data: data,
-                            success: function (response) {
-                                $("#modalRegistro").modal('hide');
-                                if (response == "TRUE") {
-                                    Swal.fire({
-                                        icon: 'success',
-                                        title: 'Buen trabajo',
-                                        text: "Pago registrado correctamente",
-                                    }).then((result) => {
-                                        if (result.isConfirmed) {
-                                            $("#dni").val("");
-                                            $("#monto").val("");
-                                            $("#contenido").hide();
-                                            $("#contenidoMonto").hide();
-                                            ListarPagos();
-                                        }
-                                    })
-                                } else {
-                                    Swal.fire({
-                                        icon: 'error',
-                                        title: 'ERROR',
-                                        text: "Pago no se puede registrar",
-                                    }).then((result) => {
-                                        if (result.isConfirmed) {
-                                            ListarPagos();
-                                            $("#modalRegistro").show();
-                                        }
-                                    })
+                        var monto = $("#monto").val();
+                        if (monto > 0) {
+                            var data = $('#form').serialize();
+                            $.ajax({
+                                type: "POST",
+                                url: "AgregarPagos",
+                                data: data,
+                                success: function (response) {
+                                    
+                                    if (response == "TRUE") {
+                                        Swal.fire({
+                                            icon: 'success',
+                                            title: 'Buen trabajo',
+                                            text: "Pago registrado correctamente",
+                                        }).then((result) => {
+                                            if (result.isConfirmed) {
+                                                $("#dni").val("");
+                                                $("#monto").val("");
+                                                $("#contenido").hide();
+                                                $("#contenidoMonto").hide();
+                                                $("#modalRegistro").modal('hide');
+                                                ListarPagos();
+                                            }
+                                        })
+                                    } else if (response == "MFALSE") {
+                                        Swal.fire("Monto mayor a la tarifa");
+                                        $("#modalRegistro").modal('show');
+                                    } else {
+                                        Swal.fire({
+                                            icon: 'error',
+                                            title: 'ERROR',
+                                            text: "Pago no se puede registrar",
+                                        }).then((result) => {
+                                            if (result.isConfirmed) {
+                                                ListarPagos();
+                                                $("#modalRegistro").modal("show");
+                                            }
+                                        })
+                                    }
                                 }
-                            }
-                        });
+                            });
+                        } else {
+                            Swal.fire("Monto invalido");
+                        }
                     });
                 }
                 function exit() {
@@ -372,10 +409,10 @@
                     </div>	
                     <div class="menu">
                         <ul>
-                            <li><a href="principal.jsp">Inicio</a></li>
-                            <li><a href="personal.jsp">Personal</a></li>
-                            <li><a href="usuarios.jsp">Usuarios</a></li>
-                            <li class="dropdown">
+                            <li id="principal" style="display: none"><a href="principal.jsp">Inicio</a></li>
+                            <li id="personal" style="display: none"><a href="personal.jsp">Personal</a></li>
+                            <li id="usuario" style="display: none"><a href="usuarios.jsp">Usuarios</a></li>
+                            <li id="registro" style="display: none" class="dropdown">
                                 <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                     Registro
                                 </a>
@@ -385,7 +422,7 @@
                                     <a class="dropdown-item active" href="pagos.jsp">Pagos</a>
                                 </ul>
                             </li>
-                            <li class="dropdown">
+                            <li id="mantenimiento" style="display: none" class="dropdown">
                                 <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                     Mantenimiento
                                 </a>
@@ -395,7 +432,7 @@
                                     <a class="dropdown-item" href="antena.jsp">Antena</a>
                                 </ul>
                             </li>
-                            <li class="dropdown">
+                            <li id="reporte" style="display: none" class="dropdown">
                                 <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                     Reportes
                                 </a>
@@ -413,6 +450,7 @@
                 </div>
             </div>
         </div>
+        <div id="modalDetalle" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true"></div>
         <div  id="modalRegistro" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
             <div class="modal-dialog" role="document">
                 <div class="modal-content">
@@ -435,10 +473,9 @@
                         </div>
                         <div id="contenidoMonto" style="display: none">
                             <div class="form-group">
-                                <label for="nombre" style="color: black">Ingrese monto a pagar:</label>
+                                <label for="nombre" style="color: black">Monto:</label>
                                 <input name="monto" id="monto" style="color: black" type="text" placeholder="Monto" class="field">
                             </div>
-
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-primary" data-dismiss="modal" id="btnClose">Close</button>
                                 <button type="button" class="btn btn-warning" style="float: right; color: white;" id="btnRegistrar">Registrar</button>
@@ -448,45 +485,6 @@
                 </div>
             </div>
         </div>
-        <%if (pago != null) {%>
-        <div  id="modalUpdate" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-            <div class="modal-dialog" role="document">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="exampleModalLabel">Editar Pago</h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                    </div>
-                    <form  id="formUp" action="ActualizarAntena" method="POST">
-                        <div class="modal-body">
-                            <div class="form-group">
-                                <% Cliente cliente = Clientedao.listarClienteId(pago.getIdCliente());
-                                    System.out.println(cliente.getNombre());
-                                %>
-                                <label for="nombre" style="color: black">DNI:</label>
-                                <input name="nomAntena" style="color: black;" type="text" placeholder="Nombre Antena" class="field" disabled value="<%=cliente.getDNI()%>"><br>
-                                <input type="hidden" name="idPago" value="<%=pago.getIdPago()%>">
-                            </div>
-                            <div class="form-group">
-                                <label for="nombre" style="color: black">Cliente:</label>
-                                <input name="ip" style="color: black;" type="text" placeholder="Ip" class="field" required disabled value="<%=cliente.getNombre()%> <%=cliente.getApellidoPaterno()%>"><br>
-                            </div>
-                            <div class="form-group">
-                                <label for="nombre" style="color: black">Monto:</label>
-                                <input name="monto" style="color: black;" type="text" placeholder="Monto" class="field" required value="<%=pago.getMonto()%>"><br>
-                            </div>
-                        </div>
-
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
-                            <button type="button" class="btn btn-warning" style="float: right; color: white;" id="btnActualizar">Actualizar</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-        <%}%>
         <div class="main">
             <div class="wrap">
                 <div class="plans">

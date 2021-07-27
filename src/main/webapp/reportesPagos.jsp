@@ -47,6 +47,23 @@
         %>
         <script type="text/javascript">
             $(document).ready(function () {
+
+            <%if (us.getIdTipoUser() == 1) {%>
+                $("#usuario").show();
+                $("#principal").show();
+                $("#personal").show();
+                $("#mantenimiento").show();
+                $("#reporte").show();
+                $("#registro").show();
+            <%}%>
+            <%if (us.getIdTipoUser() == 2) {%>
+                $("#principal").show();
+                $("#registro").show();
+            <%}%>
+            <%if (us.getIdTipoUser() == 3) {%>
+                $("#principal").show();
+                $("#reporte").show();
+            <%}%>
                 function dataTable() {
                     $('#tab').DataTable({
                         language: {
@@ -94,74 +111,40 @@
                         ]
                     });
                 }
-                function atrasMes() {
-                    $("#btnAtrasMes").click(function (e) {
-                        e.preventDefault();
-                        $("#formAño").hide();
-                        $("#formMes").hide();
-                        $("#formOpcion").show();
-                        $("#main").hide();
-                    });
+                function validarFormulario(dateInicio, dateFinal) {
+                    if (dateInicio.length != 0) {
+                        if (dateFinal.length != 0) {
+                            return true;
+                        } else {
+                            Swal.fire("Escoge una fecha final");
+                            return false;
+                        }
+                    } else {
+                        Swal.fire("Escoge una fecha de inicio");
+                        return false;
+                    }
                 }
-                function atrasAño() {
-                    $("#btnAtrasAño").click(function (e) {
-                        e.preventDefault();
-                        $("#formAño").hide();
-                        $("#formMes").hide();
-                        $("#formOpcion").show();
-                        $("#main").hide();
-                    });
-                }
-                function escogerFormulario() {
+                function ListarReportes() {
                     $("#btnEscoger").click(function (e) {
                         e.preventDefault();
-                        var opc = $("#opc").val();
-                        if (opc == "Anual") {
-                            $("#formAño").show();
-                            $("#formOpcion").hide();
-                        } else if (opc == "Mensual") {
-                            $("#formMes").show();
-                            $("#formOpcion").hide();
+                        var dateInicio = $("#dateInicio").val();
+                        var dateFinal = $("#dateFinal").val();
+                        if (validarFormulario(dateInicio, dateFinal)) {
+                            var data = $("#form").serialize();
+                            $.ajax({
+                                type: "POST",
+                                url: "ListarReportes",
+                                data: data,
+                                success: function (response) {
+                                    $("#main").show();
+                                    $("#tab").html(response);
+                                     dataTable();
+                                }
+                            });
                         }
                     });
                 }
-                function ListarReporteMes() {
-                    $("#btnReporteMes").click(function (e) {
-                        e.preventDefault();
-                        var mes = $("#opcMes").val();
-                        $.ajax({
-                            type: "POST",
-                            url: "ListarReportesPagosMes",
-                            data: {mes: mes},
-                            success: function (response) {
-                                $("#main").show();
-                                $("#tab").html(response);
-                                dataTable();
-                            }
-                        });
-                    });
-                }
-                function ListarReporteAño() {
-                    $("#btnReporteAño").click(function (e) {
-                        e.preventDefault();
-                        var año = $("#opcAño").val();
-                        $.ajax({
-                            type: "POST",
-                            url: "ListarReportesPagosAño",
-                            data: {año: año},
-                            success: function (response) {
-                                $("#main").show();
-                                $("#tab").html(response);
-                                dataTable();
-                            }
-                        });
-                    });
-                }
-                atrasAño();
-                atrasMes();
-                escogerFormulario();
-                ListarReporteAño();
-                ListarReporteMes();
+                ListarReportes();
             });
         </script>
         <style type="text/css">
@@ -356,10 +339,10 @@
                     </div>	
                     <div class="menu">
                         <ul>
-                            <li><a href="principal.jsp">Inicio</a></li>
-                            <li><a href="personal.jsp">Personal</a></li>
-                            <li><a href="usuarios.jsp">Usuarios</a></li>
-                            <li class="dropdown">
+                            <li id="principal" style="display: none"><a href="principal.jsp">Inicio</a></li>
+                            <li id="personal" style="display: none"><a href="personal.jsp">Personal</a></li>
+                            <li id="usuario" style="display: none"><a href="usuarios.jsp">Usuarios</a></li>
+                            <li id="registro" style="display: none" class="dropdown">
                                 <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                     Registro
                                 </a>
@@ -369,23 +352,23 @@
                                     <a class="dropdown-item" href="pagos.jsp">Pagos</a>
                                 </ul>
                             </li>
-                            <li class="dropdown">
+                            <li id="mantenimiento" style="display: none" class="dropdown">
                                 <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                     Mantenimiento
                                 </a>
                                 <ul class="dropdown-menu">
                                     <a class="dropdown-item" href="torre.jsp">Torre</a>
                                     <a class="dropdown-item" href="servidor.jsp">Servidor</a>
-                                    <a class="dropdown-item active" href="antena.jsp">Antena</a>
+                                    <a class="dropdown-item" href="antena.jsp">Antena</a>
                                 </ul>
                             </li>
-                            <li class="dropdown">
+                            <li id="reporte" style="display: none" class="dropdown">
                                 <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                     Reportes
                                 </a>
                                 <ul class="dropdown-menu">
                                     <a class="dropdown-item" href="reportesClientes.jsp">Por cliente</a>
-                                    <a class="dropdown-item active" href="reportesPagos.jsp">Por Pago</a>
+                                    <a class="dropdown-item active " href="reportesPagos.jsp">Por Pago</a>
                                     <a class="dropdown-item" href="reportesCaja.jsp">Cierre de Caja</a>
                                 </ul>
                             </li>
@@ -397,74 +380,21 @@
                 </div>
             </div>
         </div>
-        <div class = "content_bottom" id="formOpcion">
+
+
+        <div class = "content_bottom"  id="formOpcion">
             <div class="wrap">
-                <div class="register_account">
-                    <h3 style="text-align: center">Reporte de pagos por fecha</h3>
-                    <form id="form" name="formRegistro" method="POST"> 
-                        <div class="d-flex" style="justify-content: center">
-                            <select id="opc" name="opcion">
-                                <option value="Mensual">Mensual</option>
-                                <option value="Anual">Anual</option>
-                            </select>
-                            <div class="login"><input type="submit" name="accion"  value="Buscar" id="btnEscoger"></div>
-                        </div>
-                    </form>
+                <div class="domain-search">
+                    <div class="domain-desc">
+                        <h3>REPORTE DE PAGOS</h3>
+                    </div>
+                    <form id="form" method="POST">
+                        <input style="color: black;width:400px;height: 50px" type="date" id="dateInicio" name="dateInicio">
+                        <input style="color: black;width:400px;height: 50px" type="date" id="dateFinal" name="dateFinal">
+                        <div class="login"><input style="height: 50px;" type="submit" name="accion"  value="Buscar" id="btnEscoger"></div>
+                    </form>   
                 </div>
-            </div>              
-            <div class="clear"></div>
-        </div>
-        <div class = "content_bottom" id = "formMes" style="display: none">
-            <div class="wrap">
-                <div class="register_account">
-                    <h3 style="text-align: center">Formulario por mes</h3>
-                    <form id="form_Mes" name="formRegistro" method="POST"> 
-                        <div class="form-group">
-                            <label for="nombre" style="color: white">Seleccione un mes:</label>
-                            <select id="opcMes" name="opcion">
-                                <option value="1">Enero</option>
-                                <option value="2">Febrero</option>
-                                <option value="3">Marzo</option>
-                                <option value="4">Abril</option>
-                                <option value="5">Mayo</option>
-                                <option value="6">Junio</option>
-                                <option value="7">Julio</option>
-                                <option value="8">Agosto</option>
-                                <option value="9">Septiembre</option>
-                                <option value="10">Octubre</option>
-                                <option value="11">Noviembre</option>
-                                <option value="12">Diciembre</option>
-                            </select>
-                        </div>
-                        <div class="d-flex" style="justify-content: center">
-                            <div class="login"><input style="float: right;"type="submit" name="accion"  value="Atras" id="btnAtrasMes"></div>
-                            <div class="login"><input style="float: left;" type="submit" name="accion"  value="Reporte" id="btnReporteMes"></div>
-                        </div>
-                    </form>
-                </div>
-            </div>              
-            <div class="clear"></div>
-        </div>
-        <div class = "content_bottom" id = "formAño" style="display: none">
-            <div class="wrap">
-                <div class="register_account">
-                    <h3 style="text-align: center">Formulario por año</h3>
-                    <form id="form_Año" name="formRegistro" method="POST"> 
-                        <div class="form-group">
-                            <label for="nombre" style="color: white">Seleccione un año:</label>
-                            <select id="opcAño" name="opcion">
-                                <option value="2019">2019</option>
-                                <option value="2020">2020</option>
-                                <option value="2021">2021</option>
-                            </select>
-                        </div>
-                        <div class="d-flex" style="justify-content: center">
-                            <div class="login"><input style="float: right;"type="submit" name="accion"  value="Atras" id="btnAtrasAño"></div>
-                            <div class="login"><input style="float: left;" type="submit" name="accion"  value="Reporte" id="btnReporteAño"></div>
-                        </div>
-                    </form>
-                </div>
-            </div>              
+            </div>             
             <div class="clear"></div>
         </div>
         <div class="main" id="main" style="display: none">
@@ -477,10 +407,11 @@
                     </div> 			 
                 </div>
             </div>
+            <div class="copy_right">
+                <p> © 2021 VILLA FLASH NET . All rights reserved |  <%=p.getNombre()%> <%=p.getApellidoPaterno()%> <a href="CerrarSesion_srv?btn=true">Salir</a></p>
+            </div>
         </div> 
-        <div class="copy_right">
-            <p> © 2021 VILLA FLASH NET . All rights reserved |  <%=p.getNombre()%> <%=p.getApellidoPaterno()%> <a href="CerrarSesion_srv?btn=true">Salir</a></p>
-        </div>
+
         <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
         <%}%>

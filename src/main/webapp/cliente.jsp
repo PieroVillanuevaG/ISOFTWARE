@@ -41,6 +41,22 @@
         %>
         <script type="text/javascript">
             $(document).ready(function () {
+            <%if (us.getIdTipoUser() == 1) {%>
+                $("#usuario").show();
+                $("#principal").show();
+                $("#personal").show();
+                $("#mantenimiento").show();
+                $("#reporte").show();
+                $("#registro").show();
+            <%}%>
+            <%if (us.getIdTipoUser() == 2) {%>
+                $("#principal").show();
+                $("#registro").show();
+            <%}%>
+            <%if (us.getIdTipoUser() == 3) {%>
+                $("#principal").show();
+                $("#reporte").show();
+            <%}%>
                 $('#modalRegistro').find(".modal-header").css("background", "linear-gradient(to left, #f5af19,#f5af19)");
                 $('#modalRegistro').find(".modal-header").css("color", "white");
             <%if (cliente != null) {%>
@@ -145,6 +161,35 @@
                         url: "ListarClientes",
                         success: function (response) {
                             $('#tab').html(response);
+                            $("tr #btnEditar").click(function (e) {
+                                e.preventDefault();
+                                var id = $(this).attr("href");
+                                $.ajax({
+                                    type: "POST",
+                                    url: "EditarClientes",
+                                    data: {id: id},
+                                    success: function (response) {
+                                        $("#modalUpdate").html(response);
+                                        $('#modalUpdate').find(".modal-header").css("background", "linear-gradient(to left, #f5af19,#f5af19)");
+                                        $('#modalUpdate').find(".modal-header").css("color", "white");
+                                        $("#modalUpdate").modal("show");
+                                        actualizarClientes();
+                                    }
+                                });
+                            });
+                            $("tr #btnEliminar").click(function (e) {
+                                e.preventDefault();
+                                var id = $(this).attr("href");
+                                $.ajax({
+                                    type: "POST",
+                                    url: "EliminarClientes",
+                                    data: {id: id},
+                                    success: function (response) {
+                                        Swal.fire(response);
+                                        ListarClientes();
+                                    }
+                                });
+                            });
                             dataTable();
                         }
                     });
@@ -397,10 +442,10 @@
                     </div>	
                     <div class="menu">
                         <ul>
-                            <li><a href="principal.jsp">Inicio</a></li>
-                            <li><a href="personal.jsp">Personal</a></li>
-                            <li><a href="usuarios.jsp">Usuarios</a></li>
-                            <li class="dropdown">
+                            <li id="principal" style="display: none"><a href="principal.jsp">Inicio</a></li>
+                            <li id="personal" style="display: none"><a href="personal.jsp">Personal</a></li>
+                            <li id="usuario" style="display: none"><a href="usuarios.jsp">Usuarios</a></li>
+                            <li id="registro" style="display: none" class="dropdown">
                                 <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                     Registro
                                 </a>
@@ -410,7 +455,7 @@
                                     <a class="dropdown-item" href="pagos.jsp">Pagos</a>
                                 </ul>
                             </li>
-                            <li class="dropdown">
+                            <li id="mantenimiento" style="display: none" class="dropdown">
                                 <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                     Mantenimiento
                                 </a>
@@ -420,7 +465,7 @@
                                     <a class="dropdown-item" href="antena.jsp">Antena</a>
                                 </ul>
                             </li>
-                            <li class="dropdown">
+                            <li id="reporte" style="display: none" class="dropdown">
                                 <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                     Reportes
                                 </a>
@@ -482,53 +527,8 @@
                 </div>
             </div>
         </div>  
-        <%if (cliente != null) {%>
         <div  id="modalUpdate" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-            <div class="modal-dialog" role="document">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="exampleModalLabel">Edicion de Cliente</h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close" id="btnExit2">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                    </div>
-                    <form  id="formUp" action="ActualizarAntena" method="POST">
-                        <div class="modal-body">
-                            <div class="form-group">
-                                <label for="nombre" style="color: black">Ingrese nombre:</label>
-                                <input name="nom" style="color: black" type="text" placeholder="Nombre" class="field" value="<%=cliente.getNombre()%>" required>
-                                <input type="hidden" name="idCliente" value="<%=cliente.getIdCliente()%>">
-                            </div>
-                            <div class="form-group">
-                                <label for="nombre" style="color: black">Ingrese su primer apellido:</label>
-                                <input name="apePat" style="color: black" type="text" placeholder="Apellido Paterno" class="field" value="<%=cliente.getApellidoPaterno()%>" required> 
-                            </div>
-                            <div class="form-group">
-                                <label for="nombre" style="color: black">ingrese su segundo apellido:</label>
-                                <input name="apeMat" style="color: black" type="text" placeholder="Apellido Materno" class="field" value="<%=cliente.getApellidoMaterno()%>" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="nombre" style="color: black">Ingrese su direccion:</label>
-                                <input name="dir" type="text" style="color: black" placeholder="Direccion" class="field" value="<%=cliente.getDireccion()%>" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="nombre" style="color: black">Ingrese su correo:</label>
-                                <input name="correo" style="color: black" type="email" placeholder="Correo" class="field" value="<%=cliente.getCorreo()%>" required><br>
-                            </div>
-                            <div class="form-group">
-                                <label for="nombre" style="color: black">Ingrese su dni:</label>
-                                <input name="dni" style="color: black" type="text" placeholder="DNI" class="field" pattern="[0-9]{8}" title="Debe poner 8 números" value="<%=cliente.getDNI()%>" required>
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-primary" data-dismiss="modal" id="btnClose2">Close</button>
-                            <button type="submit" class="btn btn-warning" style="float: right; color: white;" id="btnActualizar">Actualizar</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
         </div>  
-        <%}%>
         <div class="main">
             <div class="wrap">
                 <div class="plans">

@@ -48,6 +48,23 @@
         %>
         <script type="text/javascript">
             $(document).ready(function () {
+
+            <%if (us.getIdTipoUser() == 1) {%>
+                $("#usuario").show();
+                $("#principal").show();
+                $("#personal").show();
+                $("#mantenimiento").show();
+                $("#reporte").show();
+                $("#registro").show();
+            <%}%>
+            <%if (us.getIdTipoUser() == 2) {%>
+                $("#principal").show();
+                $("#registro").show();
+            <%}%>
+            <%if (us.getIdTipoUser() == 3) {%>
+                $("#principal").show();
+                $("#reporte").show();
+            <%}%>
                 function dataTable() {
                     $('#tab').DataTable({
                         language: {
@@ -99,16 +116,32 @@
                     $("#btnReporte").click(function (e) {
                         e.preventDefault();
                         var fecha = $("#date").val();
-                        $.ajax({
-                            type: "POST",
-                            url: "ListarReportesCaja",
-                            data: {fecha: fecha},
-                            success: function (response) {
-                                $("#main").show();
-                                $("#tab").html(response);
-                                dataTable();
-                            }
-                        });
+                        if (fecha.length != 0) {
+                            $.ajax({
+                                type: "POST",
+                                url: "ListarReportesCaja",
+                                data: {fecha: fecha},
+                                success: function (response) {
+                                    $("#main").show();
+                                    $("#divTable").html(response);
+                                    dataTable();
+                                    $("#btnConfirmar").click(function (e) {
+                                        e.preventDefault();
+                                        var monto = $("#monto").val();
+                                        $.ajax({
+                                            type: "POST",
+                                            url: "AgregarMonto",
+                                            data: {monto: monto},
+                                            success: function (response) {
+                                                alert(response);
+                                            }
+                                        });
+                                    });
+                                }
+                            });
+                        }else{
+                            Swal.fire("Escoge una fecha");
+                        }
                     });
                 }
                 ListarReporte();
@@ -306,10 +339,10 @@
                     </div>	
                     <div class="menu">
                         <ul>
-                            <li><a href="principal.jsp">Inicio</a></li>
-                            <li><a href="personal.jsp">Personal</a></li>
-                            <li><a href="usuarios.jsp">Usuarios</a></li>
-                            <li class="dropdown">
+                            <li id="principal" style="display: none"><a href="principal.jsp">Inicio</a></li>
+                            <li id="personal" style="display: none"><a href="personal.jsp">Personal</a></li>
+                            <li id="usuario" style="display: none"><a href="usuarios.jsp">Usuarios</a></li>
+                            <li id="registro" style="display: none" class="dropdown">
                                 <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                     Registro
                                 </a>
@@ -319,24 +352,24 @@
                                     <a class="dropdown-item" href="pagos.jsp">Pagos</a>
                                 </ul>
                             </li>
-                            <li class="dropdown">
+                            <li id="mantenimiento" style="display: none" class="dropdown">
                                 <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                     Mantenimiento
                                 </a>
                                 <ul class="dropdown-menu">
                                     <a class="dropdown-item" href="torre.jsp">Torre</a>
                                     <a class="dropdown-item" href="servidor.jsp">Servidor</a>
-                                    <a class="dropdown-item active" href="antena.jsp">Antena</a>
+                                    <a class="dropdown-item" href="antena.jsp">Antena</a>
                                 </ul>
                             </li>
-                            <li class="dropdown">
+                            <li id="reporte" style="display: none" class="dropdown">
                                 <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                     Reportes
                                 </a>
                                 <ul class="dropdown-menu">
                                     <a class="dropdown-item" href="reportesClientes.jsp">Por cliente</a>
-                                    <a class="dropdown-item" href="reportesPagos.jsp">Por Pago</a>
-                                    <a class="dropdown-item active" href="reportesCaja.jsp">Cierre de Caja</a>
+                                    <a class="dropdown-item " href="reportesPagos.jsp">Por Pago</a>
+                                    <a class="dropdown-item" href="reportesCaja.jsp">Cierre de Caja</a>
                                 </ul>
                             </li>
                             <li><a href="CerrarSesion_srv?btn=true">Cerrar Sesion</a></li>
@@ -349,32 +382,33 @@
         </div>
         <div class = "content_bottom" id = "account">
             <div class="wrap">
-                <div class="register_account">
-                    <h3 style="text-align: center">REPORTE POR DIA</h3>
-                    <form id="form" name="formRegistro" method="POST"> 
-                        <div class="d-flex" style="justify-content: center">
-                            <input style="color: black" type="date" id="date"><label></label>
-                            <div class="login"><input type="submit" name="accion"  value="Buscar" id="btnReporte"></div>
-                        </div>
-                    </form>
+                <div class="domain-search">
+                    <div class="domain-desc">
+                        <h3>REPORTE DE CIERRE DE CAJA</h3>
+                    </div>
+                    <form id="form" method="POST">
+                        <input style="color: black;width:400px;height: 50px" type="date" id="date"><label></label>
+                        <div class="login"><input style="height: 50px"type="submit" name="accion"  value="Buscar" id="btnReporte"></div>
+
+                    </form>   
                 </div>
-            </div>              
+            </div>             
             <div class="clear"></div>
         </div>
         <div class="main" id="main" style="display: none">
             <div class="wrap">
                 <div class="plans">
                     <h3>Reporte de Cierre caja </h3>
-                    <div class="plans_table">
-                        <table id="tab" width="100%" cellspacing="0" class="compare_plan responsive">
-                        </table>
+                    <div class="plans_table" id="divTable">
+
                     </div> 			 
                 </div>
             </div>
+            <div class="copy_right">
+                <p> © 2021 VILLA FLASH NET . All rights reserved |  <%=p.getNombre()%> <%=p.getApellidoPaterno()%> <a href="CerrarSesion_srv?btn=true">Salir</a></p>
+            </div>
         </div> 
-        <div class="copy_right">
-            <p> © 2021 VILLA FLASH NET . All rights reserved |  <%=p.getNombre()%> <%=p.getApellidoPaterno()%> <a href="CerrarSesion_srv?btn=true">Salir</a></p>
-        </div>
+
         <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
         <%}%>

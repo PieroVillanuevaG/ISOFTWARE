@@ -68,8 +68,8 @@ public class Cliente_srv extends HttpServlet {
                         + "                                                    Seleccione Accion\n"
                         + "                                                </button>\n"
                         + "                                                <div class=\"dropdown-menu dropdown-menu-right\" aria-labelledby=\"dropdownMenuButton\">\n"
-                        + "                                                    <a class=\"dropdown-item\" href=\"EditarClientes?id=" + cliente.getIdCliente() + "\" title=\"Editar\">Editar</a>\n"
-                        + "                                                    <a class=\"dropdown-item\" href=\"EliminarClientes?id=" + cliente.getIdCliente() + "\" title=\"Eliminar\">Eliminar</a>\n"
+                        + "                                                    <a id='btnEditar' class=\"dropdown-item\" href='" + cliente.getIdCliente() + "' title=\"Editar\">Editar</a>\n"
+                        + "                                                    <a id= 'btnEliminar' class=\"dropdown-item\" href='" + cliente.getIdCliente() + "' title=\"Eliminar\">Eliminar</a>\n"
                         + "                                                </div>\n"
                         + "                                            </div>\n"
                         + "                                        </td>\n"
@@ -80,18 +80,57 @@ public class Cliente_srv extends HttpServlet {
         if (path.equals("/EditarClientes")) {
             int id = Integer.parseInt(request.getParameter("id"));
             Cliente cliente = Clientedao.listarClienteId(id);
-            request.setAttribute("cliente", cliente);
-            request.getRequestDispatcher("cliente.jsp").forward(request, response);
+            out.write("<div class=\"modal-dialog\" role=\"document\">\n"
+                    + "                <div class=\"modal-content\">\n"
+                    + "                    <div class=\"modal-header\">\n"
+                    + "                        <h5 class=\"modal-title\" id=\"exampleModalLabel\">Edicion de Cliente</h5>\n"
+                    + "                        <button type=\"button\" class=\"close\" data-dismiss=\"modal\" aria-label=\"Close\" id=\"btnExit2\">\n"
+                    + "                            <span aria-hidden=\"true\">&times;</span>\n"
+                    + "                        </button>\n"
+                    + "                    </div>\n"
+                    + "                    <form  id=\"formUp\" action=\"ActualizarAntena\" method=\"POST\">\n"
+                    + "                        <div class=\"modal-body\">\n"
+                    + "                            <div class=\"form-group\">\n"
+                    + "                                <label for=\"nombre\" style=\"color: black\">Ingrese nombre:</label>\n"
+                    + "                                <input name=\"nom\" style=\"color: black\" type=\"text\" placeholder=\"Nombre\" class=\"field\" value='"+cliente.getNombre()+"' required>\n"
+                    + "                                <input type=\"hidden\" name=\"idCliente\" value='"+cliente.getIdCliente()+"'>\n"
+                    + "                            </div>\n"
+                    + "                            <div class=\"form-group\">\n"
+                    + "                                <label for=\"nombre\" style=\"color: black\">Ingrese su primer apellido:</label>\n"
+                    + "                                <input name=\"apePat\" style=\"color: black\" type=\"text\" placeholder=\"Apellido Paterno\" class=\"field\" value='"+cliente.getApellidoPaterno()+"' required> \n"
+                    + "                            </div>\n"
+                    + "                            <div class=\"form-group\">\n"
+                    + "                                <label for=\"nombre\" style=\"color: black\">ingrese su segundo apellido:</label>\n"
+                    + "                                <input name=\"apeMat\" style=\"color: black\" type=\"text\" placeholder=\"Apellido Materno\" class=\"field\" value='"+cliente.getApellidoMaterno()+"' required>\n"
+                    + "                            </div>\n"
+                    + "                            <div class=\"form-group\">\n"
+                    + "                                <label for=\"nombre\" style=\"color: black\">Ingrese su direccion:</label>\n"
+                    + "                                <input name=\"dir\" type=\"text\" style=\"color: black\" placeholder=\"Direccion\" class=\"field\" value='"+cliente.getDireccion()+"' required>\n"
+                    + "                            </div>\n"
+                    + "                            <div class=\"form-group\">\n"
+                    + "                                <label for=\"nombre\" style=\"color: black\">Ingrese su correo:</label>\n"
+                    + "                                <input name=\"correo\" style=\"color: black\" type=\"email\" placeholder=\"Correo\" class=\"field\" value='"+cliente.getCorreo()+"' required><br>\n"
+                    + "                            </div>\n"
+                    + "                            <div class=\"form-group\">\n"
+                    + "                                <label for=\"nombre\" style=\"color: black\">Ingrese su dni:</label>\n"
+                    + "                                <input name=\"dni\" style=\"color: black\" type=\"text\" placeholder=\"DNI\" class=\"field\" pattern=\"[0-9]{8}\" title=\"Debe poner 8 números\" value='"+cliente.getDNI()+"' required>\n"
+                    + "                            </div>\n"
+                    + "                        </div>\n"
+                    + "                        <div class=\"modal-footer\">\n"
+                    + "                            <button type=\"button\" class=\"btn btn-primary\" data-dismiss=\"modal\" id=\"btnClose2\">Close</button>\n"
+                    + "                            <button type=\"submit\" class=\"btn btn-warning\" style=\"float: right; color: white;\" id=\"btnActualizar\">Actualizar</button>\n"
+                    + "                        </div>\n"
+                    + "                    </form>\n"
+                    + "                </div>\n"
+                    + "            </div>");
         }
         if (path.equals("/EliminarClientes")) {
             int id = Integer.parseInt(request.getParameter("id"));
             if (Clientedao.deleteCliente(id)) {
-                request.setAttribute("msg", "Eliminado");
-                request.getRequestDispatcher("cliente.jsp").forward(request, response);
+                out.write("Eliminado");
 
             } else {
-                request.setAttribute("msg", "No eliminado");
-                request.getRequestDispatcher("cliente.jsp").forward(request, response);
+               out.write("No eliminado");
             }
         }
         if (path.equals("/ActualizarClientes")) {
@@ -109,9 +148,9 @@ public class Cliente_srv extends HttpServlet {
             cl.setCorreo(correo_n);
             cl.setDNI(dni_n);
             cl.setIdCliente(id);
-            if(Clientedao.guardarCliente(cl)){
+            if (Clientedao.guardarCliente(cl)) {
                 out.write("TRUE");
-            }else{
+            } else {
                 out.write("FALSE");
             }
         }

@@ -44,6 +44,22 @@
         %>
         <script type="text/javascript">
             $(document).ready(function () {
+            <%if (us.getIdTipoUser() == 1) {%>
+                $("#usuario").show();
+                $("#principal").show();
+                $("#personal").show();
+                $("#mantenimiento").show();
+                $("#reporte").show();
+                $("#registro").show();
+            <%}%>
+            <%if (us.getIdTipoUser() == 2) {%>
+                $("#principal").show();
+                $("#registro").show();
+            <%}%>
+            <%if (us.getIdTipoUser() == 3) {%>
+                $("#principal").show();
+                $("#reporte").show();
+            <%}%>
                 function dataTable() {
                     $('#tab').DataTable({
                         responsive: true,
@@ -93,12 +109,92 @@
                         vaciar();
                     });
                 }
+                function actualizarUsuario() {
+                    $("#btnActualizar").click(function (e) {
+                        e.preventDefault();
+                        var data = $('#formUp').serialize();
+                        $.ajax({
+                            type: "POST",
+                            url: "ActualizarUsuarios",
+                            data: data,
+                            success: function (response) {
+                                $("#modalRegistro").modal('hide');
+                                if (response == "TRUE") {
+                                    Swal.fire({
+                                        icon: 'success',
+                                        title: 'Buen trabajo',
+                                        text: "Usuario modificado correctamente",
+                                    }).then((result) => {
+                                        if (result.isConfirmed) {
+                                            $("#modalEdit").modal('hide');
+                                            listarUsuarios();
+                                        }
+                                    })
+                                } else if ("FALSE") {
+                                    Swal.fire({
+                                        icon: 'error',
+                                        title: 'ERROR',
+                                        text: "Usuario  no se puede modificar",
+                                    }).then((result) => {
+                                        if (result.isConfirmed) {
+                                            $("#modalEdit").modal('show');
+                                            listarUsuarios();
+                                        }
+                                    })
+                                }
+                            }
+                        });
+                    });
+                }
                 function listarUsuarios() {
                     $.ajax({
                         type: "POST",
                         url: "ListarUsuarios",
                         success: function (response) {
                             $("#tab").html(response);
+                            $("tr #btnEstado").click(function (e) {
+                                e.preventDefault();
+                                var id = $(this).attr("href");
+                                $.ajax({
+                                    type: "POST",
+                                    url: "EstadoUsuarios",
+                                    data: {id: id},
+                                    success: function (response) {
+                                        Swal.fire(response);
+                                        listarUsuarios();
+                                    }
+                                });
+                            });
+                            $("tr #btnFormEdit").click(function (e) {
+                                e.preventDefault();
+                                var id = $(this).attr("href");
+                                $.ajax({
+                                    type: "POST",
+                                    url: "EditarUsuarios",
+                                    data: {id: id},
+                                    success: function (response) {
+                                        $("#modalEdit").html(response);
+                                        $('#modalEdit').find(".modal-header").css("background", "linear-gradient(to left, #f5af19,#f5af19)");
+                                        $('#modalEdit').find(".modal-header").css("color", "white");
+                                        $("#modalEdit").modal("show");
+                                        actualizarUsuario();
+                                    }
+                                });
+                            });
+                            $("tr #btnEliminar").click(function (e) {
+                                e.preventDefault();
+                                var id = $(this).attr("href");
+                                $.ajax({
+                                    type: "POST",
+                                    url: "EliminarUsuarios",
+                                    data: {id: id},
+                                    success: function (response) {
+                                        Swal.fire(response);
+                                        listarUsuarios();
+                                    }
+                                });
+                            });
+
                             dataTable();
                         }
                     });
@@ -122,7 +218,7 @@
                             return false;
                         }
                     } else {
-                            Swal.fire('Escoge un usuario')
+                        Swal.fire('Escoge un usuario')
                         return false;
                     }
                 }
@@ -160,63 +256,22 @@
                                             text: "El usuario de ese empleado ya esta registrado",
                                         }).then((result) => {
                                             if (result.isConfirmed) {
-                                                 $("#modalRegistro").modal('show');
+                                                $("#modalRegistro").modal('show');
                                                 listarUsuarios();
                                             }
                                         })
                                     }
                                 }
                             });
-                        } 
+                        }
                     });
                 }
-                function actualizarUsuario() {
-                    $("#btnActualizar").click(function (e) {
-                        e.preventDefault();
-                        var data = $('#formUp').serialize();
-                        $.ajax({
-                            type: "POST",
-                            url: "ActualizarUsuarios",
-                            data: data,
-                            success: function (response) {
-                                $("#modalRegistro").modal('hide');
-                                if (response == "TRUE") {
-                                    Swal.fire({
-                                        icon: 'success',
-                                        title: 'Buen trabajo',
-                                        text: "Usuario modificado correctamente",
-                                    }).then((result) => {
-                                        if (result.isConfirmed) {
-                                            $("#modalEdit").modal('hide');
-                                            listarUsuarios();
-                                        }
-                                    })
-                                } else if("FALSE"){
-                                    Swal.fire({
-                                        icon: 'error',
-                                        title: 'ERROR',
-                                        text: "Usuario  no se puede modificar",
-                                    }).then((result) => {
-                                        if (result.isConfirmed) {
-                                            $("#modalEdit").modal('show');
-                                            listarUsuarios();
-                                        }
-                                    })
-                                }
-                            }
-                        });
-                    });
-                }
+
                 $('#modalRegistro').find(".modal-header").css("background", "linear-gradient(to left, #f5af19,#f5af19)");
                 $('#modalRegistro').find(".modal-header").css("color", "white");
-            <%if (usuario != null) {%>
-                $('#modalEdit').find(".modal-header").css("background", "linear-gradient(to left, #f5af19,#f5af19)");
-                $('#modalEdit').find(".modal-header").css("color", "white");
-                $("#modalEdit").modal('show');
-            <%}%>
+
                 exit();
                 registrarUsuario();
-                actualizarUsuario();
                 listarUsuarios();
             });
         </script>
@@ -379,10 +434,10 @@
                     </div>	
                     <div class="menu">
                         <ul>
-                            <li><a href="principal.jsp">Inicio</a></li>
-                            <li><a href="personal.jsp">Personal</a></li>
-                            <li class="active"><a href="usuarios.jsp">Usuarios</a></li>
-                            <li class="dropdown">
+                            <li id="principal" style="display: none"><a href="principal.jsp">Inicio</a></li>
+                            <li id="personal" style="display: none"><a href="personal.jsp">Personal</a></li>
+                            <li id="usuario" class="active" style="display: none"><a href="usuarios.jsp">Usuarios</a></li>
+                            <li id="registro" style="display: none" class="dropdown">
                                 <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                     Registro
                                 </a>
@@ -392,7 +447,7 @@
                                     <a class="dropdown-item" href="pagos.jsp">Pagos</a>
                                 </ul>
                             </li>
-                            <li class="dropdown">
+                            <li id="mantenimiento" style="display: none" class="dropdown">
                                 <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                     Mantenimiento
                                 </a>
@@ -402,7 +457,7 @@
                                     <a class="dropdown-item" href="antena.jsp">Antena</a>
                                 </ul>
                             </li>
-                            <li class="dropdown">
+                            <li id="reporte" style="display: none" class="dropdown">
                                 <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                     Reportes
                                 </a>
@@ -466,72 +521,9 @@
                 </div>
             </div>
         </div> 
-        <%if (usuario != null) {%>
         <div  id="modalEdit" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-            <div class="modal-dialog" role="document">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="exampleModalLabel">Edicion de Usuario</h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close" id="btnExit2">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                    </div>
-                    <form  id="formUp" action="ActualizarUsuarios" method="POST">
-                        <div class="modal-body">
-                            <div class="form-group">
-                                <label for="nombre" style="color: black">Ingrese su usuario:</label>
-                                <input name="us" type="text" style="color: black;" placeholder="Username" class="field" value="<%=usuario.getUser()%>" required>
-                                <input type="hidden" name="idUsuario" value="<%=usuario.getIdUsuario()%>">
-                            </div>
-                            <div class="form-group">
-                                <label for="nombre" style="color: black">Ingrese su password:</label>
-                                <input name="pas" style="color: black;" type="password" placeholder="Password" class="field" value="<%=usuario.getPassword()%>" required> 
-                            </div>
-                            <div class="form-group">
-                                <label for="nombre" style="color: black">ingrese su tipo de usuario:</label>
-                                <% String result = null;%>
-                                <select id="country" name="cmbo_tps" onchange="change_country(this.value)" class="frm-field required">
-                                    <%for (TipoUsuario tipos : lista_tipos) {%>
-                                    <option 
-                                        <%
-                                            if (usuario.getIdTipoUser() == tipos.getIdTipoUser()) {
-                                                result = "selected";
-                                            } else {
-                                                result = "";
-                                            }
-                                        %>
-                                        <%=result%> value=<%=tipos.getIdTipoUser()%>><%=tipos.getTipoUser()%></option>      
-                                    <%}%>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label for="nombre" style="color: black">Ingrese su nombre:</label>
-                                <select id="country" name="cmbo_prs" onchange="change_country(this.value)" class="frm-field required">
 
-                                    <%for (Personal personal : lista_personal) {%>
-                                    <option 
-                                        <%
-
-                                            if (usuario.getIdPersonal() == personal.getIdPersonal()) {
-                                                result = "selected";
-                                            } else {
-                                                result = "";
-                                            }
-                                        %>
-                                        <%=result%> value=<%=personal.getIdPersonal()%>><%=personal.getNombre()%> <%=personal.getApellidoPaterno()%></option>     
-                                    <%}%>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-primary" data-dismiss="modal" id="btnClose2">Close</button>
-                            <button type="button" class="btn btn-warning" style="float: right; color: white;" id="btnActualizar">Actualizar</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
         </div> 
-        <%}%>
         <div class="main">
             <div class="wrap">
                 <div class="plans">

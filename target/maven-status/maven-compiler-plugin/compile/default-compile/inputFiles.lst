@@ -1,5 +1,6 @@
 C:\Users\PIERO\OneDrive\Documentos\NetBeansProjects\IS_villaflashnet\src\main\java\dao\TipoUsuariodao.java
 C:\Users\PIERO\OneDrive\Documentos\NetBeansProjects\IS_villaflashnet\src\main\java\controlador\Personal_srv.java
+C:\Users\PIERO\OneDrive\Documentos\NetBeansProjects\IS_villaflashnet\src\main\java\dao\Reportedao.java
 C:\Users\PIERO\OneDrive\Documentos\NetBeansProjects\IS_villaflashnet\src\main\java\controlador\Usuarios_srv.java
 C:\Users\PIERO\OneDrive\Documentos\NetBeansProjects\IS_villaflashnet\src\main\java\modelo\MarcaAntena.java
 C:\Users\PIERO\OneDrive\Documentos\NetBeansProjects\IS_villaflashnet\src\main\java\dao\Pagodao.java
@@ -28,6 +29,7 @@ C:\Users\PIERO\OneDrive\Documentos\NetBeansProjects\IS_villaflashnet\src\main\ja
 C:\Users\PIERO\OneDrive\Documentos\NetBeansProjects\IS_villaflashnet\src\main\java\modelo\Cliente.java
 C:\Users\PIERO\OneDrive\Documentos\NetBeansProjects\IS_villaflashnet\src\main\java\dao\MarcaAntenadao.java
 C:\Users\PIERO\OneDrive\Documentos\NetBeansProjects\IS_villaflashnet\src\main\java\dao\Personaldao.java
+C:\Users\PIERO\OneDrive\Documentos\NetBeansProjects\IS_villaflashnet\src\main\java\modelo\Reporte.java
 C:\Users\PIERO\OneDrive\Documentos\NetBeansProjects\IS_villaflashnet\src\main\java\modelo\Servidor.java
 C:\Users\PIERO\OneDrive\Documentos\NetBeansProjects\IS_villaflashnet\src\main\java\dao\Clientedao.java
 C:\Users\PIERO\OneDrive\Documentos\NetBeansProjects\IS_villaflashnet\src\main\java\modelo\Pago.java

@@ -16,6 +16,7 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import static modelo.MD5.getMD5;
 import modelo.Personal;
 import modelo.TipoUsuario;
@@ -27,7 +28,7 @@ import modelo.Usuario;
  */
 @WebServlet(name = "Usuarios_srv", urlPatterns = {"/Usuarios_srv", "/ListarUsuarios", "/EditarUsuarios", "/EliminarUsuarios", "/AgregarUsuarios", "/ActualizarUsuarios", "/EstadoUsuarios"})
 public class Usuarios_srv extends HttpServlet {
-
+    
     Usuario us = new Usuario();
 
     /**
@@ -46,6 +47,8 @@ public class Usuarios_srv extends HttpServlet {
         String path = request.getServletPath();
         if (path.equals("/ListarUsuarios")) {
             ArrayList<Usuario> lista = Usuariodao.listarUsuarios();
+            HttpSession s = request.getSession();
+            Usuario us = (Usuario) s.getAttribute("us");
             int i = 0;
             out.write("<thead>\n"
                     + "                                <tr>\n"
@@ -68,47 +71,102 @@ public class Usuarios_srv extends HttpServlet {
                 } else if (estado.equals("I")) {
                     nomEst = "INACTIVO";
                 }
-
+                
                 out.write("<tr>\n"
-                        + "                                    \n"
-                        + "                                    <td>" + i + "</td>\n"
-                        + "                                    <td >" + usuario.getUser() + "</td>\n"
-                        + "                                    <td >" + tp.getTipoUser().toUpperCase() + "</td>\n"
-                        + "                                    <td >" + nomEst + "</td>\n"
-                        + "                                    <td>\n"
-                        + "                                        <div class=\"dropdown\">\n"
-                        + "                                            <button class=\"btn btn-warning dropdown-toggle\" type=\"button\" id=\"dropdownMenuButton\" data-toggle=\"dropdown\" aria-haspopup=\"true\" aria-expanded=\"false\">\n"
-                        + "                                                Seleccione Accion\n"
-                        + "                                            </button>\n"
-                        + "                                            <div class=\"dropdown-menu dropdown-menu-right\" aria-labelledby=\"dropdownMenuButton\">\n"
-                        + "                                                <a class=\"dropdown-item\" href=\"EstadoUsuarios?id=" + usuario.getIdUsuario() + "\" title=\"Cambiar Estado\">Cambiar Estado</a>\n"
-                        + "                                                <a class=\"dropdown-item\" href=\"EditarUsuarios?id=" + usuario.getIdUsuario() + "\" title=\"Editar\">Editar</a>\n"
-                        + "                                                <a class=\"dropdown-item\" href=\"EliminarUsuarios?id=" + usuario.getIdUsuario() + "\" title=\"Eliminar\">Eliminar</a>\n"
-                        + "                                            </div>\n"
-                        + "                                        </div>\n"
-                        + "                                    </td>\n"
-                        + "                                </tr>");
+                        + "<td>" + i + "</td>\n"
+                        + "<td >" + usuario.getUser() + "</td>\n"
+                        + " <td >" + tp.getTipoUser().toUpperCase() + "</td>\n"
+                        + "<td >" + nomEst + "</td>");
+                out.write("<td>\n"
+                        + "<div class=\"dropdown\">\n"
+                        + " <button class=\"btn btn-warning dropdown-toggle\" type=\"button\" id=\"dropdownMenuButton\" data-toggle=\"dropdown\" aria-haspopup=\"true\" aria-expanded=\"false\">\n"
+                        + "Seleccione Accion\n"
+                        + "</button>\n"
+                        + "<div class=\"dropdown-menu dropdown-menu-right\" aria-labelledby=\"dropdownMenuButton\">");
+                if (usuario.getIdUsuario() == us.getIdUsuario()) {
+                    out.write("<a id = 'btnFormEdit' class=\"dropdown-item\" href='" + usuario.getIdUsuario() + "' title=\"Editar\">Editar</a>");
+                } else {
+                    out.write("<a  id ='btnEstado' class=\"dropdown-item\" href='" + usuario.getIdUsuario() + "' title=\"Cambiar Estado\">Cambiar Estado</a>\n"
+                            + "<a id = 'btnFormEdit' class=\"dropdown-item\" href='" + usuario.getIdUsuario() + "' title=\"Editar\">Editar</a>\n"
+                            + " <a id='btnEliminar' class=\"dropdown-item\" href='" + usuario.getIdUsuario() + "' title=\"Eliminar\">Eliminar</a>");
+                }
+                out.write(" </div>\n"
+                        + " </div>\n"
+                        + "</td>\n"
+                        + "</tr>");
             }
             out.write("<tbody>");
         }
         if (path.equals("/EditarUsuarios")) {
             int id = Integer.parseInt(request.getParameter("id"));
+            String result = null;
+            ArrayList<TipoUsuario> lista_tipos = TipoUsuariodao.listarTipos();
+            ArrayList<Personal> lista_personal = Personaldao.listarPersonal();
             Usuario us = Usuariodao.listarUsuarioXId(id);
-            request.setAttribute("usuario", us);
-            request.getRequestDispatcher("usuarios.jsp").forward(request, response);
+            out.write("<div class=\"modal-dialog\" role=\"document\">\n"
+                    + "                <div class=\"modal-content\">\n"
+                    + "                    <div class=\"modal-header\">\n"
+                    + "                        <h5 class=\"modal-title\" id=\"exampleModalLabel\">Edicion de Usuario</h5>\n"
+                    + "                        <button type=\"button\" class=\"close\" data-dismiss=\"modal\" aria-label=\"Close\" id=\"btnExit2\">\n"
+                    + "                            <span aria-hidden=\"true\">&times;</span>\n"
+                    + "                        </button>\n"
+                    + "                    </div>\n"
+                    + "                    <form  id=\"formUp\" action=\"ActualizarUsuarios\" method=\"POST\">\n"
+                    + "                        <div class=\"modal-body\">\n"
+                    + "                            <div class=\"form-group\">\n"
+                    + "                                <label for=\"nombre\" style=\"color: black\">Ingrese su usuario:</label>\n"
+                    + "                                <input name=\"us\" type=\"text\" style=\"color: black;\" placeholder=\"Username\" class=\"field\" value='" + us.getUser() + "' required>\n"
+                    + "                                <input type=\"hidden\" name=\"idUsuario\" value='"+us.getIdUsuario()+"'>\n"
+                    + "                            </div>\n"
+                    + "                            <div class=\"form-group\">\n"
+                    + "                                <label for=\"nombre\" style=\"color: black\">Ingrese su password:</label>\n"
+                    + "                                <input name=\"pas\" style=\"color: black;\" type=\"password\" placeholder=\"Password\" class=\"field\" value='" + us.getPassword() + "' required> \n"
+                    + "                            </div>");
+            out.write("<div class=\"form-group\">");
+            out.write("<label for=\"nombre\" style=\"color: black\">ingrese su tipo de usuario:</label>");
+            out.write("<select id=\"country\" name=\"cmbo_tps\" onchange=\"change_country(this.value)\" class=\"frm-field required\">");
+            for (TipoUsuario tipos : lista_tipos) {
+                out.write("<option");
+                if (us.getIdTipoUser() == tipos.getIdTipoUser()) {
+                    result = "selected";
+                } else {
+                    result = "";
+                }
+                out.write(" " + result + " " + "value=" + tipos.getIdTipoUser() + ">" + tipos.getTipoUser() + "</option> ");
+            }
+            out.write("</select></div>");
+            out.write("<div class=\"form-group\">");
+            out.write(" <label for=\"nombre\" style=\"color: black\">Ingrese su nombre:</label>");
+            out.write("<select id=\"country\" name=\"cmbo_prs\" onchange=\"change_country(this.value)\" class=\"frm-field required\">");
+            for (Personal personal : lista_personal) {
+                out.write("<option");
+                if (us.getIdPersonal() == personal.getIdPersonal()) {
+                    result = "selected";
+                } else {
+                    result = "";
+                }
+                out.write(" " + result + " " + "value=" + personal.getIdPersonal() + ">" + personal.getNombre() + " " + personal.getApellidoPaterno() + "</option> ");
+            }
+            out.write("</select></div>");
+            out.write("</div>\n"
+                    + "                        <div class=\"modal-footer\">\n"
+                    + "                            <button type=\"button\" class=\"btn btn-primary\" data-dismiss=\"modal\" id=\"btnClose2\">Close</button>\n"
+                    + "                            <button type=\"button\" class=\"btn btn-warning\" style=\"float: right; color: white;\" id=\"btnActualizar\">Actualizar</button>\n"
+                    + "                        </div>\n"
+                    + "                    </form>\n"
+                    + "                </div>\n"
+                    + "            </div>");
         }
         if (path.equals("/EliminarUsuarios")) {
             int id = Integer.parseInt(request.getParameter("id"));
             if (Usuariodao.deleteUsuario(id)) {
-                request.setAttribute("msg", "Eliminado");
-                request.getRequestDispatcher("usuarios.jsp").forward(request, response);
+                out.write("Eliminado");
             } else {
-                request.setAttribute("msg", "No Eliminado");
-                request.getRequestDispatcher("usuarios.jsp").forward(request, response);
+                out.write("No se puede eliminar");
             }
         }
         if (path.equals("/ActualizarUsuarios")) {
-
+            
             String user_n = request.getParameter("us").toUpperCase();
             String pass_n = request.getParameter("pas");
             int id_tps_n = Integer.parseInt(request.getParameter("cmbo_tps"));
@@ -149,15 +207,15 @@ public class Usuarios_srv extends HttpServlet {
             String estado = user.getEstado();
             if (estado.equals("A")) {
                 if (Usuariodao.desconectarUsuario(id)) {
-                    request.getRequestDispatcher("usuarios.jsp").forward(request, response);
+                    out.write("Desconectado");
                 }
             } else if (estado.equals("I")) {
                 if (Usuariodao.conectarUsuario(id)) {
-                    request.getRequestDispatcher("usuarios.jsp").forward(request, response);
+                    out.write("Conectado");
                 }
             }
         }
-
+        
     }
 
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">

@@ -50,6 +50,10 @@
                         }
                     });
                 });
+                $("#btnRegresar").click(function (e){
+                    e.preventDefault();
+                    window.location="index.jsp";
+                });
             });
         </script>
 

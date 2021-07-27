@@ -66,8 +66,8 @@ public class Servidor_srv extends HttpServlet {
                         + "                                                    Seleccione Accion\n"
                         + "                                                </button>\n"
                         + "                                                <div class=\"dropdown-menu dropdown-menu-right\" aria-labelledby=\"dropdownMenuButton\">\n"
-                        + "                                                    <a class=\"dropdown-item\" href=\"EditarServidores?id=" + servidor.getIdServidor() + "\" title=\"Editar\">Editar</a>\n"
-                        + "                                                    <a class=\"dropdown-item\" href=\"EliminarServidores?id=" + servidor.getIdServidor() + "\" title=\"Eliminar\">Eliminar</a>\n"
+                        + "                                                    <a id='btnEditar' class=\"dropdown-item\" href='" + servidor.getIdServidor() + "' title=\"Editar\">Editar</a>\n"
+                        + "                                                    <a id ='btnEliminar' class=\"dropdown-item\" href='" + servidor.getIdServidor() + "' title=\"Eliminar\">Eliminar</a>\n"
                         + "\n"
                         + "                                                </div>\n"
                         + "                                            </div>\n"
@@ -94,17 +94,44 @@ public class Servidor_srv extends HttpServlet {
         if (path.equals("/EditarServidores")) {
             int id = Integer.parseInt(request.getParameter("id"));
             Servidor servidor = Servidordao.listarServidoresId(id);
-            request.setAttribute("servidor", servidor);
-            request.getRequestDispatcher("servidor.jsp").forward(request, response);
+            out.write("<div class=\"modal-dialog\" role=\"document\">\n" +
+"                <div class=\"modal-content\">\n" +
+"                    <div class=\"modal-header\">\n" +
+"                        <h5 class=\"modal-title\" id=\"exampleModalLabel\">Edicion de Servidor</h5>\n" +
+"                        <button type=\"button\" class=\"close\" data-dismiss=\"modal\" aria-label=\"Close\">\n" +
+"                            <span aria-hidden=\"true\">&times;</span>\n" +
+"                        </button>\n" +
+"                    </div>\n" +
+"                    <form  id=\"formUp\" action=\"ActualizarAntena\" method=\"POST\">\n" +
+"                        <div class=\"modal-body\">\n" +
+"                            <div class=\"form-group\">\n" +
+"                                <label for=\"nombre\" style=\"color: black\">Ingrese nombre de servidor:</label>\n" +
+"                                <input name=\"nomServidor\" style=\"color: black\" type=\"text\" placeholder=\"Nombre Servidor\" value='"+servidor.getNombreServidor()+"' class=\"field\" required><br>\n" +
+"                                <input type=\"hidden\" name=\"idServidor\" value='"+servidor.getIdServidor()+"'>\n" +
+"                            </div>\n" +
+"                            <div class=\"form-group\">\n" +
+"                                <label for=\"nombre\" style=\"color: black\">Ingrese ip de entrada:</label>\n" +
+"                                <input name=\"ipEntrada\"  style=\"color: black\" type=\"text\" placeholder=\"IP Entrada\" value='"+servidor.getIpEntrada()+"' class=\"field\" required><br>\n" +
+"                            </div>\n" +
+"                            <div class=\"form-group\">\n" +
+"                                <label for=\"nombre\" style=\"color: black\">ingrese ip de salida:</label>\n" +
+"                                <input name=\"ipSalida\" style=\"color: black\" type=\"text\" placeholder=\"IP Salida\" value='"+servidor.getIpSalida()+"' class=\"field\" required><br>\n" +
+"                            </div>\n" +
+"                        </div>\n" +
+"                        <div class=\"modal-footer\">\n" +
+"                            <button type=\"button\" class=\"btn btn-primary\" data-dismiss=\"modal\">Close</button>\n" +
+"                            <button type=\"button\" class=\"btn btn-warning\" style=\"float: right; color: white;\" id=\"btnActualizar\">Actualizar</button>\n" +
+"                        </div>\n" +
+"                    </form>\n" +
+"                </div>\n" +
+"            </div>");
         }
         if (path.equals("/EliminarServidores")) {
             int id = Integer.parseInt(request.getParameter("id"));
             if (Servidordao.deleteServidor(id)) {
-                request.setAttribute("msg", "Eliminado");
-                request.getRequestDispatcher("servidor.jsp").forward(request, response);
+                out.write("Eliminado");
             } else {
-                request.setAttribute("msg", "No eliminado");
-                request.getRequestDispatcher("servidor.jsp").forward(request, response);
+                out.write("No eliminado");
             }
         }
         if (path.equals("/AgregarServidores")) {

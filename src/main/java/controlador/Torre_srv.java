@@ -41,7 +41,7 @@ public class Torre_srv extends HttpServlet {
         String path = request.getServletPath();
         if (path.equals("/ListarTorres")) {
             ArrayList<Torre> lista = Torredao.listarTorres();
-            int i = 1;
+            int i = 0;
             out.write("<thead>\n"
                     + "                                <tr>\n"
                     + "                                    <th class=\"plans-list\"><h3>#</h3></th>\n"
@@ -68,8 +68,8 @@ public class Torre_srv extends HttpServlet {
                         + "                                                    Seleccione Accion\n"
                         + "                                                </button>\n"
                         + "                                                <div class=\"dropdown-menu dropdown-menu-right\" aria-labelledby=\"dropdownMenuButton\">\n"
-                        + "                                                    <a class=\"dropdown-item\" href=\"EditarTorres?id=" + torre.getIdTorre() + "\" title=\"Editar\">Editar</a>\n"
-                        + "                                                    <a class=\"dropdown-item\" href=\"EliminarTorres?id=" + torre.getIdTorre() + "\" title=\"Eliminar\">Eliminar</a>\n"
+                        + "                                                    <a id='btnEditar' class=\"dropdown-item\" href='" + torre.getIdTorre() + "' title=\"Editar\">Editar</a>\n"
+                        + "                                                    <a id='btnEliminar' class=\"dropdown-item\" href='" + torre.getIdTorre() + "' title=\"Eliminar\">Eliminar</a>\n"
                         + "\n"
                         + "                                                </div>\n"
                         + "                                            </div>\n"
@@ -81,8 +81,41 @@ public class Torre_srv extends HttpServlet {
         if (path.equals("/EditarTorres")) {
             int id = Integer.parseInt(request.getParameter("id"));
             Torre torre = Torredao.listarTorresId(id);
-            request.setAttribute("torre", torre);
-            request.getRequestDispatcher("torre.jsp").forward(request, response);
+            out.write("<div class=\"modal-dialog\" role=\"document\">\n" +
+"                <div class=\"modal-content\">\n" +
+"                    <div class=\"modal-header\">\n" +
+"                        <h5 class=\"modal-title\" id=\"exampleModalLabel\">Edicion de Torre</h5>\n" +
+"                        <button type=\"button\" class=\"close\" data-dismiss=\"modal\" aria-label=\"Close\">\n" +
+"                            <span aria-hidden=\"true\">&times;</span>\n" +
+"                        </button>\n" +
+"                    </div>\n" +
+"                    <form  id=\"formUp\" action=\"ActualizarAntena\" method=\"POST\">\n" +
+"                        <div class=\"modal-body\">\n" +
+"                            <div class=\"form-group\">\n" +
+"                                <label for=\"nombre\" style=\"color: black\">Ingrese nombre de la torre:</label>\n" +
+"                                <input name=\"nomTorre\" style=\"color: black\" type=\"text\" placeholder=\"Nombre Torre\" value='"+torre.getNombreTorre()+"' class=\"field\" required>\n" +
+"                                <input type=\"hidden\" name=\"idTorre\" value='"+torre.getIdTorre()+"'>\n" +
+"                            </div>\n" +
+"                            <div class=\"form-group\">\n" +
+"                                <label for=\"nombre\" style=\"color: black\">Ingrese su direccion:</label>\n" +
+"                                <input name=\"dirTorre\" style=\"color: black\" type=\"text\" placeholder=\"Direccion\" value='"+torre.getDireccion()+"' class=\"field\" required> \n" +
+"                            </div>\n" +
+"                            <div class=\"form-group\">\n" +
+"                                <label for=\"nombre\" style=\"color: black\">ingrese nombre del dueño:</label>\n" +
+"                                <input name=\"dueLocal\" style=\"color: black\" type=\"text\" placeholder=\"Dueño Local\" value='"+torre.getDueñoLocal()+"' class=\"field\" required>\n" +
+"                            </div>\n" +
+"                            <div class=\"form-group\">\n" +
+"                                <label for=\"nombre\" style=\"color: black\">Ingrese telefono de referencia:</label>\n" +
+"                                <input name=\"telefono\" style=\"color: black\" type=\"text\" placeholder=\"Telefono\" value='"+torre.getTelefono()+"' class=\"field\" required>\n" +
+"                            </div>\n" +
+"                        </div>\n" +
+"                        <div class=\"modal-footer\">\n" +
+"                            <button type=\"button\" class=\"btn btn-primary\" data-dismiss=\"modal\">Close</button>\n" +
+"                            <button type=\"button\" class=\"btn btn-warning\" style=\"float: right; color: white;\" id=\"btnActualizar\">Actualizar</button>\n" +
+"                        </div>\n" +
+"                    </form>\n" +
+"                </div>\n" +
+"            </div>");
         }
         if (path.equals("/ActualizarTorres")) {
             int id = Integer.parseInt(request.getParameter("idTorre"));
@@ -104,11 +137,9 @@ public class Torre_srv extends HttpServlet {
         if (path.equals("/EliminarTorres")) {
             int id = Integer.parseInt(request.getParameter("id"));
             if (Torredao.deleteTorre(id)) {
-                request.setAttribute("msg", "Eliminado");
-                request.getRequestDispatcher("torre.jsp").forward(request, response);
+                out.write("Eliminado");
             } else {
-                request.setAttribute("msg", "No eliminado");
-                request.getRequestDispatcher("torre.jsp").forward(request, response);
+                 out.write("No Eliminado");
             }
         }
         if (path.equals("/AgregarTorres")) {

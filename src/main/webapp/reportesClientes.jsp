@@ -48,6 +48,23 @@
         %>
         <script type="text/javascript">
             $(document).ready(function () {
+
+            <%if (us.getIdTipoUser() == 1) {%>
+                $("#usuario").show();
+                $("#principal").show();
+                $("#personal").show();
+                $("#mantenimiento").show();
+                $("#reporte").show();
+                $("#registro").show();
+            <%}%>
+            <%if (us.getIdTipoUser() == 2) {%>
+                $("#principal").show();
+                $("#registro").show();
+            <%}%>
+            <%if (us.getIdTipoUser() == 3) {%>
+                $("#principal").show();
+                $("#reporte").show();
+            <%}%>
                 function dataTable() {
                     $('#tab').DataTable({
                         language: {
@@ -95,20 +112,36 @@
                         ]
                     });
                 }
+                function validarFormulario(dniSol) {
+                    if (dniSol.length != 0) {
+                        if ($.isNumeric(dniSol)) {
+                            return true;
+                        } else {
+                            Swal.fire("Formato Dni invalido");
+                            return false;
+                        }
+                    } else {
+                        Swal.fire("Dni vacio");
+                        return false;
+                    }
+                }
                 function ListarReporte() {
                     $("#btnBuscar").click(function (e) {
                         e.preventDefault();
-                        var data = $("#form").serialize();
-                        $.ajax({
-                            type: "POST",
-                            url: "ListarReportesCliente",
-                            data: data,
-                            success: function (response) {
-                                $("#main").show();
-                                $("#tab").html(response);
-                                dataTable();
-                            }
-                        });
+                        var dniSol = $("#dniSol").val();
+                        if (validarFormulario(dniSol)) {
+                            var data = $("#form").serialize();
+                            $.ajax({
+                                type: "POST",
+                                url: "ListarReportesCliente",
+                                data: data,
+                                success: function (response) {
+                                    $("#main").show();
+                                    $("#tab").html(response);
+                                    dataTable();
+                                }
+                            });
+                        }
                     });
                 }
                 ListarReporte();
@@ -306,10 +339,10 @@
                     </div>	
                     <div class="menu">
                         <ul>
-                            <li><a href="principal.jsp">Inicio</a></li>
-                            <li><a href="personal.jsp">Personal</a></li>
-                            <li><a href="usuarios.jsp">Usuarios</a></li>
-                            <li class="dropdown">
+                            <li id="principal" style="display: none"><a href="principal.jsp">Inicio</a></li>
+                            <li id="personal" style="display: none"><a href="personal.jsp">Personal</a></li>
+                            <li id="usuario" style="display: none"><a href="usuarios.jsp">Usuarios</a></li>
+                            <li id="registro" style="display: none" class="dropdown">
                                 <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                     Registro
                                 </a>
@@ -319,23 +352,23 @@
                                     <a class="dropdown-item" href="pagos.jsp">Pagos</a>
                                 </ul>
                             </li>
-                            <li class="dropdown">
+                            <li id="mantenimiento" style="display: none" class="dropdown">
                                 <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                     Mantenimiento
                                 </a>
                                 <ul class="dropdown-menu">
                                     <a class="dropdown-item" href="torre.jsp">Torre</a>
                                     <a class="dropdown-item" href="servidor.jsp">Servidor</a>
-                                    <a class="dropdown-item active" href="antena.jsp">Antena</a>
+                                    <a class="dropdown-item" href="antena.jsp">Antena</a>
                                 </ul>
                             </li>
-                            <li class="dropdown">
+                            <li id="reporte" style="display: none" class="dropdown">
                                 <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                     Reportes
                                 </a>
                                 <ul class="dropdown-menu">
                                     <a class="dropdown-item active" href="reportesClientes.jsp">Por cliente</a>
-                                    <a class="dropdown-item" href="reportesPagos.jsp">Por Pago</a>
+                                    <a class="dropdown-item " href="reportesPagos.jsp">Por Pago</a>
                                     <a class="dropdown-item" href="reportesCaja.jsp">Cierre de Caja</a>
                                 </ul>
                             </li>
@@ -349,16 +382,16 @@
         </div>
         <div class = "content_bottom" id = "account">
             <div class="wrap">
-                <div class="register_account">
-                    <h3 style="text-align: center">REPORTE DE PAGO POR CLIENTE</h3>
-                    <form id="form" name="formRegistro" method="POST"> 
-                        <div class="d-flex" style="justify-content: center">
-                            <input name="dniSol" style="width:100px;" type="text" placeholder="DNI" class="field" required>
-                            <div class="login"><input type="submit" name="accion"  value="Buscar" id="btnBuscar"></div>
-                        </div>
-                    </form>
+                <div class="domain-search">
+                    <div class="domain-desc">
+                        <h3>REPORTE DE PAGO POR CLIENTE</h3>
+                    </div>
+                    <form id="form" method="POST">
+                        <input id="dniSol" name="dniSol" style="width:300px;" type="text" placeholder="DNI" class="field" required>
+                        <div class="login"><input style="height: 50px;" type="submit" name="accion"  value="Buscar" id="btnBuscar"></div>
+                    </form>   
                 </div>
-            </div>              
+            </div>             
             <div class="clear"></div>
         </div>
         <div class="main" id="main" style="display: none">
@@ -371,10 +404,11 @@
                     </div> 			 
                 </div>
             </div>
+            <div class="copy_right">
+                <p> © 2021 VILLA FLASH NET . All rights reserved |  <%=p.getNombre()%> <%=p.getApellidoPaterno()%> <a href="CerrarSesion_srv?btn=true">Salir</a></p>
+            </div>
         </div> 
-        <div class="copy_right">
-            <p> © 2021 VILLA FLASH NET . All rights reserved |  <%=p.getNombre()%> <%=p.getApellidoPaterno()%> <a href="CerrarSesion_srv?btn=true">Salir</a></p>
-        </div>
+
         <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
 

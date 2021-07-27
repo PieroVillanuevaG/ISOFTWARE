@@ -42,11 +42,26 @@
         %>
         <script type="text/javascript">
             $(document).ready(function () {
+
+            <%if (us.getIdTipoUser() == 1) {%>
+                $("#usuario").show();
+                $("#principal").show();
+                $("#personal").show();
+                $("#mantenimiento").show();
+                $("#reporte").show();
+                $("#registro").show();
+            <%}%>
+            <%if (us.getIdTipoUser() == 2) {%>
+                $("#principal").show();
+                $("#registro").show();
+            <%}%>
+            <%if (us.getIdTipoUser() == 3) {%>
+                $("#principal").show();
+                $("#reporte").show();
+            <%}%>
                 $('#modalRegistro').find(".modal-header").css("background", "linear-gradient(to left, #f5af19,#f5af19)");
                 $('#modalRegistro').find(".modal-header").css("color", "white");
-            <%if (servidor != null) {%>
-                $("#modalRegistro").modal('show');
-            <%}%>
+
                 function dataTable() {
                     $('#tab').DataTable({
                         responsive: true,
@@ -74,12 +89,59 @@
                         },
                     });
                 }
+                function validarFormulario(nomServidor, ipEntrada, ipSalida) {
+                    if (nomServidor.length != 0) {
+                        if (ipEntrada.length != 0) {
+                            if (ipSalida.length != 0) {
+                                return true;
+                            } else {
+                                Swal.fire("Ip de salida vacio");
+                                return false;
+                            }
+                        } else {
+                            Swal.fire("Ip de entrada vacio");
+                            return false;
+                        }
+                    } else {
+                        Swal.fire("nombre de servidor vacio");
+                        return false;
+                    }
+                }
                 function ListarServidor() {
                     $.ajax({
                         type: "POST",
                         url: "ListarServidores",
                         success: function (response) {
                             $('#tab').html(response);
+                            $("tr #btnEliminar").click(function (e) {
+                                e.preventDefault();
+                                var id = $(this).attr("href");
+                                $.ajax({
+                                    type: "POST",
+                                    url: "EliminarServidores",
+                                    data: {id: id},
+                                    success: function (response) {
+                                        Swal.fire(response);
+                                        ListarServidor();
+                                    }
+                                });
+                            });
+                            $("tr #btnEditar").click(function (e) {
+                                e.preventDefault();
+                                var id = $(this).attr("href");
+                                $.ajax({
+                                    type: "POST",
+                                    url: "EditarServidores",
+                                    data: {id: id},
+                                    success: function (response) {
+                                        $("#modalUpdate").html(response);
+                                        $('#modalUpdate').find(".modal-header").css("background", "linear-gradient(to left, #f5af19,#f5af19)");
+                                        $('#modalUpdate').find(".modal-header").css("color", "white");
+                                        $("#modalUpdate").modal("show");
+                                        actualizarServidor();
+                                    }
+                                });
+                            });
                             dataTable();
                         }
                     });
@@ -87,36 +149,44 @@
                 function registrarServidor() {
                     $('#btnRegistrar').click(function (e) {
                         e.preventDefault();
-                        var data = $('#form').serialize();
-                        $.ajax({
-                            type: "POST",
-                            url: "AgregarServidores",
-                            data: data,
-                            success: function (response) {
-                                $("#modalRegistro").modal('hide');
-                                if (response == "TRUE") {
-                                    Swal.fire({
-                                        icon: 'success',
-                                        title: 'Buen trabajo',
-                                        text: "Servidor registrado correctamente",
-                                    }).then((result) => {
-                                        if (result.isConfirmed) {
-                                            ListarServidor();
-                                        }
-                                    })
-                                } else {
-                                    Swal.fire({
-                                        icon: 'error',
-                                        title: 'ERROR',
-                                        text: "Servidor no se puede registrar",
-                                    }).then((result) => {
-                                        if (result.isConfirmed) {
-                                            ListarServidor();
-                                        }
-                                    })
+                        var nomServidor = $("#nomServidor").val();
+                        var ipEntrada = $("#ipEntrada").val();
+                        var ipSalida = $("#ipSalida").val();
+                        if (validarFormulario(nomServidor, ipEntrada, ipSalida)) {
+                            var data = $('#form').serialize();
+                            $.ajax({
+                                type: "POST",
+                                url: "AgregarServidores",
+                                data: data,
+                                success: function (response) {
+                                    $("#modalRegistro").modal('hide');
+                                    if (response == "TRUE") {
+                                        $("#nomServidor").val("");
+                                        $("#ipEntrada").val("");
+                                        $("#ipSalida").val("");
+                                        Swal.fire({
+                                            icon: 'success',
+                                            title: 'Buen trabajo',
+                                            text: "Servidor registrado correctamente",
+                                        }).then((result) => {
+                                            if (result.isConfirmed) {
+                                                ListarServidor();
+                                            }
+                                        })
+                                    } else {
+                                        Swal.fire({
+                                            icon: 'error',
+                                            title: 'ERROR',
+                                            text: "Servidor no se puede registrar",
+                                        }).then((result) => {
+                                            if (result.isConfirmed) {
+                                                ListarServidor();
+                                            }
+                                        })
+                                    }
                                 }
-                            }
-                        });
+                            });
+                        }
                     });
                 }
                 function actualizarServidor() {
@@ -128,8 +198,8 @@
                             url: "ActualizarServidores",
                             data: data,
                             success: function (response) {
-                                $("#modalRegistro").modal('hide');
                                 if (response == "TRUE") {
+                                    $("#modalUpdate").modal('hide');
                                     Swal.fire({
                                         icon: 'success',
                                         title: 'Buen trabajo',
@@ -156,7 +226,6 @@
                 }
                 ListarServidor();
                 registrarServidor();
-                actualizarServidor();
             });
         </script>
         <style type="text/css">
@@ -318,10 +387,10 @@
                     </div>	
                     <div class="menu">
                         <ul>
-                            <li><a href="principal.jsp">Inicio</a></li>
-                            <li><a href="personal.jsp">Personal</a></li>
-                            <li><a href="usuarios.jsp">Usuarios</a></li>
-                            <li class="dropdown">
+                            <li id="principal" style="display: none"><a href="principal.jsp">Inicio</a></li>
+                            <li id="personal" style="display: none"><a href="personal.jsp">Personal</a></li>
+                            <li id="usuario" style="display: none"><a href="usuarios.jsp">Usuarios</a></li>
+                            <li id="registro" style="display: none" class="dropdown">
                                 <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                     Registro
                                 </a>
@@ -331,7 +400,7 @@
                                     <a class="dropdown-item" href="pagos.jsp">Pagos</a>
                                 </ul>
                             </li>
-                            <li class="dropdown">
+                            <li id="mantenimiento" style="display: none" class="dropdown">
                                 <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                     Mantenimiento
                                 </a>
@@ -341,7 +410,7 @@
                                     <a class="dropdown-item" href="antena.jsp">Antena</a>
                                 </ul>
                             </li>
-                            <li class="dropdown">
+                            <li id="reporte" style="display: none" class="dropdown">
                                 <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                     Reportes
                                 </a>
@@ -363,29 +432,24 @@
             <div class="modal-dialog" role="document">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <%if (servidor == null) {%>
                         <h5 class="modal-title" id="exampleModalLabel">Registro de Servidor</h5>
-                        <%} else {%>
-                        <h5 class="modal-title" id="exampleModalLabel">Edicion de Servidor</h5>
-                        <%}%>
                         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                             <span aria-hidden="true">&times;</span>
                         </button>
                     </div>
-                    <%if (servidor == null) {%>
                     <form  id="form" action="AgregarAntena" method="POST">
                         <div class="modal-body">
                             <div class="form-group">
                                 <label for="nombre" style="color: black">Ingrese  nombre de servidor:</label>
-                                <input name="nomServidor" style="color: black" type="text" placeholder="Nombre Servidor" class="field" required>
+                                <input id="nomServidor" name="nomServidor" style="color: black" type="text" placeholder="Nombre Servidor" class="field" required>
                             </div>
                             <div class="form-group">
                                 <label for="nombre" style="color: black">Ingrese la ip de entrada:</label>
-                                <input name="ipEntrada" style="color: black" type="text" placeholder="IP Entrada" class="field" required> 
+                                <input id="ipEntrada" name="ipEntrada" style="color: black" type="text" placeholder="IP Entrada" class="field" required> 
                             </div> 
                             <div class="form-group">
                                 <label for="nombre" style="color: black">Ingrese la ip de salida:</label>
-                                <input name="ipSalida" style="color: black" type="text" placeholder="IP Salida" class="field" required>
+                                <input id="ipSalida" name="ipSalida" style="color: black" type="text" placeholder="IP Salida" class="field" required>
                             </div>
                         </div>
 
@@ -394,33 +458,10 @@
                             <button type="button" class="btn btn-warning" style="float: right; color: white;" id="btnRegistrar">Registrar</button>
                         </div>
                     </form>
-                    <%} else {%>
-                    <form  id="formUp" action="ActualizarAntena" method="POST">
-                        <div class="modal-body">
-                            <div class="form-group">
-                                <label for="nombre" style="color: black">Ingrese nombre de servidor:</label>
-                                <input name="nomServidor" style="color: black" type="text" placeholder="Nombre Servidor" value="<%=servidor.getNombreServidor()%>" class="field" required><br>
-                                <input type="hidden" name="idServidor" value="<%=servidor.getIdServidor()%>">
-                            </div>
-                            <div class="form-group">
-                                <label for="nombre" style="color: black">Ingrese ip de entrada:</label>
-                                <input name="ipEntrada"  style="color: black" type="text" placeholder="IP Entrada" value="<%=servidor.getIpEntrada()%>"class="field" required><br>
-                            </div>
-                            <div class="form-group">
-                                <label for="nombre" style="color: black">ingrese ip de salida:</label>
-                                <input name="ipSalida" style="color: black" type="text" placeholder="IP Salida" value="<%=servidor.getIpSalida()%>"class="field" required><br>
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
-                            <button type="button" class="btn btn-warning" style="float: right; color: white;" id="btnActualizar">Actualizar</button>
-                        </div>
-                    </form>
-                    <%}%>
                 </div>
             </div>
         </div> 
-
+        <div  id="modalUpdate" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true"></div>
         <div class="main">
             <div class="wrap">
                 <div class="plans">

@@ -42,13 +42,25 @@
         %>
         <script type="text/javascript">
             $(document).ready(function () {
+            <%if (us.getIdTipoUser() == 1) {%>
+                $("#usuario").show();
+                $("#principal").show();
+                $("#personal").show();
+                $("#mantenimiento").show();
+                $("#reporte").show();
+                $("#registro").show();
+            <%}%>
+            <%if (us.getIdTipoUser() == 2) {%>
+                $("#principal").show();
+                $("#registro").show();
+            <%}%>
+            <%if (us.getIdTipoUser() == 3) {%>
+                $("#principal").show();
+                $("#reporte").show();
+            <%}%>
                 $('#modalRegistro').find(".modal-header").css("background", "linear-gradient(to left, #f5af19,#f5af19)");
                 $('#modalRegistro').find(".modal-header").css("color", "white");
-            <%if (p != null) {%>
-                $('#modalUpdate').find(".modal-header").css("background", "linear-gradient(to left, #f5af19,#f5af19)");
-                $('#modalUpdate').find(".modal-header").css("color", "white");
-                $("#modalUpdate").modal('show');
-            <%}%>
+            
                 function tabDatatable() {
                     $('#tab').DataTable({
                         responsive: true,
@@ -86,7 +98,8 @@
                                             if (archivos.length != 0) {
                                                 return true;
                                             } else {
-                                               Swal.fire('Seleccione una imagen'); return false;
+                                                Swal.fire('Seleccione una imagen');
+                                                return false;
                                             }
                                             ;
                                         } else {
@@ -98,7 +111,7 @@
                                         return false;
                                     }
                                 } else {
-                                      Swal.fire('Solo se aceptan numeros en el campo dni');
+                                    Swal.fire('Solo se aceptan numeros en el campo dni');
                                     return false;
                                 }
                             } else {
@@ -110,7 +123,7 @@
                             return false;
                         }
                     } else {
-                         Swal.fire('Escriba un nombre correcto');
+                        Swal.fire('Escriba un nombre correcto');
                         return false;
                     }
                 }
@@ -146,6 +159,35 @@
                         url: "ListarPersonal",
                         success: function (response) {
                             $("#tab").html(response);
+                            $("tr #btnEditar").click(function (e) {
+                                e.preventDefault();
+                                var id = $(this).attr("href");
+                                $.ajax({
+                                    type: "POST",
+                                    url: "EditarPersonal",
+                                    data: {id: id},
+                                    success: function (response) {
+                                        $("#modalUpdate").html(response);
+                                        $('#modalUpdate').find(".modal-header").css("background", "linear-gradient(to left, #f5af19,#f5af19)");
+                                        $('#modalUpdate').find(".modal-header").css("color", "white");
+                                        $("#modalUpdate").modal("show");
+                                        actualizarPersonal();
+                                    }
+                                });
+                            });
+                            $("tr #btnEliminar").click(function (e) {
+                                e.preventDefault();
+                                var id = $(this).attr("href");
+                                $.ajax({
+                                    type: "POST",
+                                    url: "EliminarPersonal",
+                                    data: {id: id},
+                                    success: function (response) {
+                                        Swal.fire(response);
+                                        ListarPersonal();
+                                    }
+                                });
+                            });
                             tabDatatable();
                         }
                     });
@@ -236,7 +278,7 @@
                 exit();
                 ListarPersonal();
                 registrarPersonal();
-                actualizarPersonal();
+
             });
         </script>
         <style type="text/css">
@@ -398,10 +440,10 @@
                     </div>	
                     <div class="menu">
                         <ul>
-                            <li><a href="principal.jsp">Inicio</a></li>
-                            <li class="active"><a href="personal.jsp">Personal</a></li>
-                            <li><a href="usuarios.jsp">Usuarios</a></li>
-                            <li class="dropdown">
+                            <li id="principal" style="display: none"><a href="principal.jsp">Inicio</a></li>
+                            <li id="personal" class="active" style="display: none"><a href="personal.jsp">Personal</a></li>
+                            <li id="usuario" style="display: none"><a href="usuarios.jsp">Usuarios</a></li>
+                            <li id="registro" style="display: none" class="dropdown">
                                 <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                     Registro
                                 </a>
@@ -411,7 +453,7 @@
                                     <a class="dropdown-item" href="pagos.jsp">Pagos</a>
                                 </ul>
                             </li>
-                            <li class="dropdown">
+                            <li id="mantenimiento" style="display: none" class="dropdown">
                                 <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                     Mantenimiento
                                 </a>
@@ -421,7 +463,7 @@
                                     <a class="dropdown-item" href="antena.jsp">Antena</a>
                                 </ul>
                             </li>
-                            <li class="dropdown">
+                            <li id="reporte" style="display: none" class="dropdown">
                                 <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                     Reportes
                                 </a>
@@ -486,50 +528,8 @@
                 </div>
             </div>
         </div>  
-        <%if (p != null) {%>
         <div  id="modalUpdate" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-            <div class="modal-dialog" role="document">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="exampleModalLabel">Edicion del Personal</h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close" id="btnExit2">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                    </div>
-                    <form  id="formUp" action="ActualizarPersonal" method="POST">
-                        <div class="modal-body">
-                            <div class="form-group">
-                                <label for="nombre" style="color: black">Ingrese su nombre:</label>
-                                <input type="text" style="color: black;" name="nombre" id="nombre" placeholder="Nombre" value="<%=p.getNombre()%>" required><br>
-                                <input type="hidden" name="idPersonal" value="<%=p.getIdPersonal()%>">
-                            </div>
-                            <div class="form-group">
-                                <label for="nombre" style="color: black">Ingrese su Apellido Paterno:</label>
-                                <input type="text" style="color: black;" name="apeP" id="apeP" placeholder="Apellido Paterno" value="<%=p.getApellidoPaterno()%>" required><br>
-                            </div>
-                            <div class="form-group">
-                                <label for="nombre" style="color: black">Ingrese su Apellido Materno:</label>
-                                <input type="text" style="color: black;" name="apeM" id="apeM" placeholder="Apellido Materno" value="<%=p.getApellidoMaterno()%>" required><br>
-                            </div>
-                            <div class="form-group">
-                                <label for="nombre" style="color: black">Ingrese su DNI:</label>
-                                <input type="text" style="color: black;" name="dni" id="dni" placeholder="DNI" value="<%=p.getDni()%>" pattern="[0-9]{8}" title="Debe poner 8 números" required><br>
-                            </div>
-                            <div class="form-group">
-                                <label for="nombre" style="color: black">Ingrese su correo:</label>
-                                <input type="email" style="color: black;" name="correo" id="correo" placeholder="Correo" value="<%=p.getCorreo()%>" required><br>
-                            </div>
-                        </div>
-
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-primary" data-dismiss="modal" id="btnClose2">Close</button>
-                            <button type="submit" class="btn btn-warning" style="float: right; color: white;" id="btnActualizar">Actualizar</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
         </div> 
-        <%}%>
         <div class="main">
             <div class="wrap">
                 <div class="plans">

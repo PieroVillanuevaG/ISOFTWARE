@@ -72,8 +72,8 @@ public class Personal_srv extends HttpServlet {
                         + "                                                Seleccione Accion\n"
                         + "                                            </button>\n"
                         + "                                            <div class=\"dropdown-menu dropdown-menu-right\" aria-labelledby=\"dropdownMenuButton\">\n"
-                        + "                                                <a id='btnEditar' class=\"dropdown-item\" href='EditarPersonal?id=" + personal.getIdPersonal() + "' title=\"Editar\">Editar</a>\n"
-                        + "                                                <a id='btnEliminar' class=\"dropdown-item\" href='EliminarPersonal?id=" + personal.getIdPersonal() + "' title=\"Eliminar\">Eliminar</a>\n"
+                        + "                                                <a id='btnEditar' class=\"dropdown-item\" href='" + personal.getIdPersonal() + "' title=\"Editar\">Editar</a>\n"
+                        + "                                                <a id='btnEliminar' class=\"dropdown-item\" href='" + personal.getIdPersonal() + "' title=\"Eliminar\">Eliminar</a>\n"
                         + "                                            </div>\n"
                         + "                                        </div></td>");
                 out.write("</tr>");
@@ -93,7 +93,7 @@ public class Personal_srv extends HttpServlet {
                 for (int i = 0; i < items.size(); i++) {
                     FileItem item = (FileItem) items.get(i);
                     if (!item.isFormField()) {
-                        File archivo = new File("C:\\Users\\PIERO\\OneDrive\\Documentos\\NetBeansProjects\\IS_villaflashnet\\src\\main\\webapp\\imagenesPersonal\\" + item.getName());
+                        File archivo = new File(request.getServletContext().getRealPath("/")+"/imagenesPersonal/" + item.getName());
                         item.write(archivo);
                         imgs.add("imagenesPersonal/" + item.getName());
                     } else {
@@ -117,8 +117,46 @@ public class Personal_srv extends HttpServlet {
         if (path.equals("/EditarPersonal")) {
             int id = Integer.parseInt(request.getParameter("id"));
             Personal pers = Personaldao.listarPersonalXId(id);
-            request.setAttribute("personal", pers);
-            request.getRequestDispatcher("personal.jsp").forward(request, response);
+            out.write("<div class=\"modal-dialog\" role=\"document\">\n"
+                    + "                <div class=\"modal-content\">\n"
+                    + "                    <div class=\"modal-header\">\n"
+                    + "                        <h5 class=\"modal-title\" id=\"exampleModalLabel\">Edicion del Personal</h5>\n"
+                    + "                        <button type=\"button\" class=\"close\" data-dismiss=\"modal\" aria-label=\"Close\" id=\"btnExit2\">\n"
+                    + "                            <span aria-hidden=\"true\">&times;</span>\n"
+                    + "                        </button>\n"
+                    + "                    </div>\n"
+                    + "                    <form  id=\"formUp\" action=\"ActualizarPersonal\" method=\"POST\">\n"
+                    + "                        <div class=\"modal-body\">\n"
+                    + "                            <div class=\"form-group\">\n"
+                    + "                                <label for=\"nombre\" style=\"color: black\">Ingrese su nombre:</label>\n"
+                    + "                                <input type=\"text\" style=\"color: black;\" name=\"nombre\" id=\"nombre\" placeholder=\"Nombre\" value='"+pers.getNombre()+"' required><br>\n"
+                    + "                                <input type=\"hidden\" name=\"idPersonal\" value='"+pers.getIdPersonal()+"'>\n"
+                    + "                            </div>\n"
+                    + "                            <div class=\"form-group\">\n"
+                    + "                                <label for=\"nombre\" style=\"color: black\">Ingrese su Apellido Paterno:</label>\n"
+                    + "                                <input type=\"text\" style=\"color: black;\" name=\"apeP\" id=\"apeP\" placeholder=\"Apellido Paterno\" value='"+pers.getApellidoPaterno()+"' required><br>\n"
+                    + "                            </div>\n"
+                    + "                            <div class=\"form-group\">\n"
+                    + "                                <label for=\"nombre\" style=\"color: black\">Ingrese su Apellido Materno:</label>\n"
+                    + "                                <input type=\"text\" style=\"color: black;\" name=\"apeM\" id=\"apeM\" placeholder=\"Apellido Materno\" value='"+pers.getApellidoMaterno()+"' required><br>\n"
+                    + "                            </div>\n"
+                    + "                            <div class=\"form-group\">\n"
+                    + "                                <label for=\"nombre\" style=\"color: black\">Ingrese su DNI:</label>\n"
+                    + "                                <input type=\"text\" style=\"color: black;\" name=\"dni\" id=\"dni\" placeholder=\"DNI\" value='"+pers.getDni()+"' pattern=\"[0-9]{8}\" title=\"Debe poner 8 números\" required><br>\n"
+                    + "                            </div>\n"
+                    + "                            <div class=\"form-group\">\n"
+                    + "                                <label for=\"nombre\" style=\"color: black\">Ingrese su correo:</label>\n"
+                    + "                                <input type=\"email\" style=\"color: black;\" name=\"correo\" id=\"correo\" placeholder=\"Correo\" value='"+pers.getCorreo()+"' required><br>\n"
+                    + "                            </div>\n"
+                    + "                        </div>\n"
+                    + "\n"
+                    + "                        <div class=\"modal-footer\">\n"
+                    + "                            <button type=\"button\" class=\"btn btn-primary\" data-dismiss=\"modal\" id=\"btnClose2\">Close</button>\n"
+                    + "                            <button type=\"submit\" class=\"btn btn-warning\" style=\"float: right; color: white;\" id=\"btnActualizar\">Actualizar</button>\n"
+                    + "                        </div>\n"
+                    + "                    </form>\n"
+                    + "                </div>\n"
+                    + "            </div>");
 
         }
         if (path.equals("/ActualizarPersonal")) {
@@ -143,11 +181,9 @@ public class Personal_srv extends HttpServlet {
         if (path.equals("/EliminarPersonal")) {
             int id = Integer.parseInt(request.getParameter("id"));
             if (Personaldao.deletePersonal(id)) {
-                request.setAttribute("msg", "Eliminado");
-                request.getRequestDispatcher("personal.jsp").forward(request, response);
+                out.write("Eliminado");
             } else {
-                request.setAttribute("msg", "No Eliminado");
-                request.getRequestDispatcher("personal.jsp").forward(request, response);
+                out.write("No eliminado");
             }
         }
     }

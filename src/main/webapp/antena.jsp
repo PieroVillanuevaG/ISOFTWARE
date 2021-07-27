@@ -52,11 +52,25 @@
         %>
         <script type="text/javascript">
             $(document).ready(function () {
+            <%if (us.getIdTipoUser() == 1) {%>
+                $("#usuario").show();
+                $("#principal").show();
+                $("#personal").show();
+                $("#mantenimiento").show();
+                $("#reporte").show();
+                $("#registro").show();
+            <%}%>
+            <%if (us.getIdTipoUser() == 2) {%>
+                $("#principal").show();
+                $("#registro").show();
+            <%}%>
+            <%if (us.getIdTipoUser() == 3) {%>
+                $("#principal").show();
+                $("#reporte").show();
+            <%}%>
                 $('#modalRegistro').find(".modal-header").css("background", "linear-gradient(to left, #f5af19,#f5af19)");
                 $('#modalRegistro').find(".modal-header").css("color", "white");
-            <%if (antena != null) {%>
-                $("#modalRegistro").modal('show');
-            <%}%>
+
                 function dataTable() {
                     $('#tab').DataTable({
                         responsive: true,
@@ -90,43 +104,119 @@
                         url: "ListarAntena",
                         success: function (response) {
                             $('#tab').html(response);
+                            $("tr #btnEliminar").click(function (e) {
+                                e.preventDefault();
+                                var id = $(this).attr("href");
+                                $.ajax({
+                                    type: "POST",
+                                    url: "EliminarAntena",
+                                    data: {id: id},
+                                    success: function (response) {
+                                        Swal.fire(response);
+                                        ListarAntena();
+                                    }
+                                });
+                            });
+                            $("tr #btnEditar").click(function (e) {
+                                e.preventDefault();
+                                var id = $(this).attr("href");
+                                $.ajax({
+                                    type: "POST",
+                                    url: "EditarAntena",
+                                    data: {id: id},
+                                    success: function (response) {
+                                        $("#modalUpdate").html(response);
+                                        $('#modalUpdate').find(".modal-header").css("background", "linear-gradient(to left, #f5af19,#f5af19)");
+                                        $('#modalUpdate').find(".modal-header").css("color", "white");
+                                        $("#modalUpdate").modal("show");
+                                        actualizarAntena();
+                                    }
+                                });
+                            });
                             dataTable();
                         }
                     });
                 }
+                function validarFormulario(nomAntena, ip, mac, frecuencia, canal, passConfig, passConec) {
+                    if (nomAntena.length != 0) {
+                        if (ip.length != 0) {
+                            if (mac.length != 0) {
+                                if (frecuencia.length != 0) {
+                                    if (canal.length != 0) {
+                                        if (passConfig.length != 0) {
+                                            if (passConec.length != 0) {
+                                                return true;
+                                            } else {
+                                                Swal.fire("Password Conecxion vacio");
+                                                return false;
+                                            }
+                                        } else {
+                                            Swal.fire("Password Configuracion vacio");
+                                            return false;
+                                        }
+                                    } else {
+                                        Swal.fire("canal vacio");
+                                        return false;
+                                    }
+                                } else {
+                                    Swal.fire("frecuencia vacia");
+                                    return false;
+                                }
+                            } else {
+                                Swal.fire("mac vacio");
+                                return false;
+                            }
+                        } else {
+                            Swal.fire("ip vacio");
+                            return false;
+                        }
+                    } else {
+                        Swal.fire("nombre vacio");
+                        return false;
+                    }
+                }
                 function registrarAntena() {
                     $('#btnRegistrar').click(function (e) {
                         e.preventDefault();
-                        var data = $('#form').serialize();
-                        $.ajax({
-                            type: "POST",
-                            url: "AgregarAntena",
-                            data: data,
-                            success: function (response) {
-                                $("#modalRegistro").modal('hide');
-                                if (response == "TRUE") {
-                                    Swal.fire({
-                                        icon: 'success',
-                                        title: 'Buen trabajo',
-                                        text: "Antena registrado correctamente",
-                                    }).then((result) => {
-                                        if (result.isConfirmed) {
-                                            ListarAntena();
-                                        }
-                                    })
-                                } else {
-                                    Swal.fire({
-                                        icon: 'error',
-                                        title: 'ERROR',
-                                        text: "Antena no se puede registrar",
-                                    }).then((result) => {
-                                        if (result.isConfirmed) {
-                                            ListarAntena();
-                                        }
-                                    })
+                        var nomAntena = $("#nomAntena").val();
+                        var ip = $("#ip").val();
+                        var mac = $("#mac").val();
+                        var frecuencia = $("#frecuencia").val();
+                        var canal = $("#canal").val();
+                        var passConfig = $("#passConfig").val();
+                        var passConec = $("#passConec").val();
+                        if (validarFormulario(nomAntena, ip, mac, frecuencia, canal, passConfig, passConec)) {
+                            var data = $('#form').serialize();
+                            $.ajax({
+                                type: "POST",
+                                url: "AgregarAntena",
+                                data: data,
+                                success: function (response) {
+                                    $("#modalRegistro").modal('hide');
+                                    if (response == "TRUE") {
+                                        Swal.fire({
+                                            icon: 'success',
+                                            title: 'Buen trabajo',
+                                            text: "Antena registrado correctamente",
+                                        }).then((result) => {
+                                            if (result.isConfirmed) {
+                                                ListarAntena();
+                                            }
+                                        })
+                                    } else {
+                                        Swal.fire({
+                                            icon: 'error',
+                                            title: 'ERROR',
+                                            text: "Antena no se puede registrar",
+                                        }).then((result) => {
+                                            if (result.isConfirmed) {
+                                                ListarAntena();
+                                            }
+                                        })
+                                    }
                                 }
-                            }
-                        });
+                            });
+                        }
                     });
                 }
                 function actualizarAntena() {
@@ -138,8 +228,9 @@
                             url: "ActualizarAntena",
                             data: data,
                             success: function (response) {
-                                $("#modalRegistro").modal('hide');
+
                                 if (response == "TRUE") {
+                                    $("#modalUpdate").modal('hide');
                                     Swal.fire({
                                         icon: 'success',
                                         title: 'Buen trabajo',
@@ -328,30 +419,30 @@
                     </div>	
                     <div class="menu">
                         <ul>
-                            <li><a href="principal.jsp">Inicio</a></li>
-                            <li><a href="personal.jsp">Personal</a></li>
-                            <li><a href="usuarios.jsp">Usuarios</a></li>
-                            <li class="dropdown">
+                            <li id="principal" style="display: none"><a href="principal.jsp">Inicio</a></li>
+                            <li id="personal" style="display: none"><a href="personal.jsp">Personal</a></li>
+                            <li id="usuario" style="display: none"><a href="usuarios.jsp">Usuarios</a></li>
+                            <li id="registro" style="display: none" class="dropdown">
                                 <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                     Registro
                                 </a>
                                 <ul class="dropdown-menu">
                                     <a class="dropdown-item" href="cliente.jsp">Cliente</a>
                                     <a class="dropdown-item" href="servicios.jsp">Servicio</a>
-                                     <a class="dropdown-item" href="pagos.jsp">Pagos</a>
+                                    <a class="dropdown-item" href="pagos.jsp">Pagos</a>
                                 </ul>
                             </li>
-                            <li class="dropdown">
+                            <li id="mantenimiento" style="display: none" class="dropdown">
                                 <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                     Mantenimiento
                                 </a>
                                 <ul class="dropdown-menu">
                                     <a class="dropdown-item" href="torre.jsp">Torre</a>
                                     <a class="dropdown-item" href="servidor.jsp">Servidor</a>
-                                    <a class="dropdown-item active" href="antena.jsp">Antena</a>
+                                    <a class="dropdown-item active"  href="antena.jsp">Antena</a>
                                 </ul>
                             </li>
-                            <li class="dropdown">
+                            <li id="reporte" style="display: none" class="dropdown">
                                 <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                     Reportes
                                 </a>
@@ -373,45 +464,41 @@
             <div class="modal-dialog" role="document">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <%if (antena == null) {%>
-                        <h5 class="modal-title" id="exampleModalLabel">Registro de Personal</h5>
-                        <%} else {%>
-                        <h5 class="modal-title" id="exampleModalLabel">Edicion de Personal</h5>
-                        <%}%>
+                        <h5 class="modal-title" id="exampleModalLabel">Registro de Antena</h5>
                         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                             <span aria-hidden="true">&times;</span>
                         </button>
                     </div>
-                    <%if (antena == null) {%>
+
                     <form  id="form" action="AgregarAntena" method="POST">
                         <div class="modal-body">
                             <div class="form-group">
                                 <label for="nombre" style="color: black">Ingrese su nombre de antena:</label>
-                                <input name="nomAntena" style="color: black;" type="text" placeholder="Nombre Antena" class="field" required>
+                                <input id="nomAntena" name="nomAntena" style="color: black;" type="text" placeholder="Nombre Antena" class="field" required>
                             </div>
                             <div class="form-group">
                                 <label for="nombre" style="color: black">Ingrese su IP:</label>
-                                <input name="ip" style="color: black;" type="text" placeholder="Ip" class="field" required> 
+                                <input id="ip" name="ip" style="color: black;" type="text" placeholder="Ip" class="field" required> 
                             </div>
                             <div class="form-group">
                                 <label for="nombre" style="color: black">Ingrese su MAC:</label>
-                                <input name="mac" style="color: black;" type="text" placeholder="Mac" class="field" required>
+                                <input id="mac" name="mac" style="color: black;" type="text" placeholder="Mac" class="field" required>
                             </div>
                             <div class="form-group">
                                 <label for="nombre" style="color: black">Ingrese su Frecuencia:</label>
-                                <input name="frecuencia"  style="color: black;" type="text" placeholder="Frecuencia" class="field" required>
+                                <input id="frecuencia" name="frecuencia"  style="color: black;" type="text" placeholder="Frecuencia" class="field" required>
                             </div>
                             <div class="form-group">
                                 <label for="nombre" style="color: black">Ingrese su canal:</label>
-                                <input name="canal" style="color: black;" type="text" placeholder="Canal" class="field" required>
+                                <input id="canal" name="canal" style="color: black;" type="text" placeholder="Canal" class="field" required>
                             </div>
                             <div class="form-group">
                                 <label for="nombre" style="color: black">Ingrese su password configuracion:</label>
-                                <input name="passConfig" style="color: black;" type="text" placeholder="Password Configuracion" class="field" required>
+                                <input id="passConfig" name="passConfig" style="color: black;" type="text" placeholder="Password Configuracion" class="field" required>
                             </div>
                             <div class="form-group">
                                 <label for="nombre" style="color: black">Ingrese su password conexion:</label>
-                                <input name="passConec" style="color: black;" type="text" placeholder="Password Conexion" class="field" required>
+                                <input id="passConec" name="passConec" style="color: black;" type="text" placeholder="Password Conexion" class="field" required>
                             </div>
                             <div class="form-group">
                                 <label for="nombre" style="color: black">Ingrese su Servidor:</label>
@@ -438,108 +525,16 @@
                                     <%}%>
                                 </select>
                             </div>
-
                         </div>
-
                         <div class="modal-footer">
                             <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
                             <button type="button" class="btn btn-warning" style="float: right; color: white;" id="btnRegistrar">Registrar</button>
                         </div>
                     </form>
-                    <%} else {%>
-                    <form  id="formUp" action="ActualizarAntena" method="POST">
-                        <div class="modal-body">
-                            <div class="form-group">
-                                <label for="nombre" style="color: black">Ingrese su nombre de la antena:</label>
-                                <input name="nomAntena" style="color: black;" type="text" placeholder="Nombre Antena" class="field" required value="<%=antena.getNombreAntena()%>"><br>
-                                <input type="hidden" name="idAntena" value="<%=antena.getIdAntena()%>">
-                            </div>
-                            <div class="form-group">
-                                <label for="nombre" style="color: black">Ingrese su IP:</label>
-                                <input name="ip" style="color: black;" type="text" placeholder="Ip" class="field" required value="<%=antena.getIp()%>"><br>
-                            </div>
-                            <div class="form-group">
-                                <label for="nombre" style="color: black">ingrese su Mac:</label>
-                                <input name="mac" style="color: black;" type="text" placeholder="Mac" class="field" required value="<%=antena.getMac()%>"><br>
-                            </div>
-                            <div class="form-group">
-                                <label for="nombre" style="color: black">Ingrese su Frecuencia:</label>
-                                <input name="frecuencia" style="color: black;" type="text" placeholder="Frecuencia" class="field" required value="<%=antena.getFrecuencia()%>"><br> 
-                            </div>
-                            <div class="form-group">
-                                <label for="nombre" style="color: black">Ingrese su Canal:</label>
-                                <input name="canal" style="color: black;" type="text" placeholder="Canal" class="field" required value="<%=antena.getCanal()%>"><br>
-                            </div>
-                            <div class="form-group">
-                                <label for="nombre" style="color: black">Ingrese su password configuracion:</label>
-                                <input name="passConfig" style="color: black;" type="text" placeholder="Password Configuracion" class="field" value="<%=antena.getPasswConfig()%>"required><br>
-                            </div>
-                            <div class="form-group">
-                                <label for="nombre" style="color: black">Ingrese su password conexion:</label>
-                                <input name="passConec" style="color: black;" type="text" placeholder="Password Conexion" class="field" value="<%=antena.getPasswConeccion()%>"required><br>
-                            </div>
-                            <% String result = null;
-                            %>
-                            <div class="form-group">
-                                <label for="nombre" style="color: black">Ingrese su Servidor:</label>
-                                <select id="country" name="cmbo_servidor" onchange="change_country(this.value)" class="frm-field required">
-                                    <%for (Servidor servidor : lista_servidor) {%>
-                                    <option 
-                                        <%
-                                            if (servidor.getIdServidor() == antena.getIdServidor()) {
-                                                result = "selected";
-                                            } else {
-                                                result = "";
-                                            }
-                                        %>
-                                        <%=result%> value=<%=servidor.getIdServidor()%>><%=servidor.getNombreServidor()%></option>  
-                                    <%}%>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label for="nombre" style="color: black">Ingrese su Torre:</label>
-                                <select id="country" name="cmbo_torre" onchange="change_country(this.value)" class="frm-field required">
-                                    <%for (Torre torre : lista_torre) {%>
-                                    <option 
-                                        <%
-                                            if (torre.getIdTorre() == antena.getIdTorre()) {
-                                                result = "selected";
-                                            } else {
-                                                result = "";
-                                            }
-
-                                        %>
-                                        <%=result%> value=<%=torre.getIdTorre()%>><%=torre.getNombreTorre()%></option>   
-
-                                    <%}%>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label for="nombre" style="color: black">Tipo de antena:</label>
-                                <select id="country" name="cmbo_tipos" onchange="change_country(this.value)" class="frm-field required">
-                                    <%for (TipoAntena tipoAntena : lista_tipo) {%>
-                                    <option 
-                                        <%if (tipoAntena.getIdtipo() == antena.getIdTipo()) {
-                                                result = "selected";
-                                            } else {
-                                                result = "";
-                                            }
-                                        %>
-                                        <%=result%> value=<%=tipoAntena.getIdtipo()%>><%=tipoAntena.getTipoAntena()%></option>  
-                                    <%}%>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
-                            <button type="button" class="btn btn-warning" style="float: right; color: white;" id="btnActualizar">Actualizar</button>
-                        </div>
-                    </form>
-                    <%}%>
                 </div>
             </div>
         </div>  
+        <div  id="modalUpdate" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true"></div>
         <div class="main">
             <div class="wrap">
                 <div class="plans">

@@ -34,4 +34,21 @@ public class MarcaAntenadao {
         }
         return lista;
     }
+      public static MarcaAntena listarMarcaAntenaId(int id){
+        MarcaAntena ma=null;
+        Connection cn = conexion.conexion.abrir();
+        try{
+            PreparedStatement stm = cn.prepareStatement("select * from marcaantena where idMarca=?");
+            stm.setInt(1, id);
+            ResultSet rs = stm.executeQuery();
+            while(rs.next()){
+             ma = new MarcaAntena();
+             ma.setIdMarca(rs.getInt("idMarca"));
+             ma.setMarca(rs.getString("marca"));
+            }
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+        return ma;
+    }
 }

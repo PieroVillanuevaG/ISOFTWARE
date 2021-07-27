@@ -41,11 +41,25 @@
         %>
         <script type="text/javascript">
             $(document).ready(function () {
+
+            <%if (us.getIdTipoUser() == 1) {%>
+                $("#usuario").show();
+                $("#principal").show();
+                $("#personal").show();
+                $("#mantenimiento").show();
+                $("#reporte").show();
+                $("#registro").show();
+            <%}%>
+            <%if (us.getIdTipoUser() == 2) {%>
+                $("#principal").show();
+                $("#registro").show();
+            <%}%>
+            <%if (us.getIdTipoUser() == 3) {%>
+                $("#principal").show();
+                $("#reporte").show();
+            <%}%>
                 $('#modalRegistro').find(".modal-header").css("background", "linear-gradient(to left, #f5af19,#f5af19)");
                 $('#modalRegistro').find(".modal-header").css("color", "white");
-            <%if (torre != null) {%>
-                $("#modalRegistro").modal('show');
-            <%}%>
                 function dataTable() {
                     $('#tab').DataTable({
                         responsive: true,
@@ -79,43 +93,102 @@
                         url: "ListarTorres",
                         success: function (response) {
                             $('#tab').html(response);
+                            $("tr #btnEliminar").click(function (e) {
+                                e.preventDefault();
+                                var id = $(this).attr("href");
+                                $.ajax({
+                                    type: "POST",
+                                    url: "EliminarTorres",
+                                    data: {id: id},
+                                    success: function (response) {
+                                        Swal.fire(response);
+                                        listarTorres();
+                                    }
+                                });
+                            });
+                            $("tr #btnEditar").click(function (e) {
+                                e.preventDefault();
+                                var id = $(this).attr("href");
+                                $.ajax({
+                                    type: "POST",
+                                    url: "EditarTorres",
+                                    data: {id: id},
+                                    success: function (response) {
+                                        $("#modalUpdate").html(response);
+                                        $('#modalUpdate').find(".modal-header").css("background", "linear-gradient(to left, #f5af19,#f5af19)");
+                                        $('#modalUpdate').find(".modal-header").css("color", "white");
+                                        $("#modalUpdate").modal("show");
+                                        actualizarTorre();
+                                    }
+                                });
+                            });
                             dataTable();
                         }
                     });
                 }
+                function validarFormulario(nomTorre, dirTorre, dueLocal, telefono) {
+                    if (nomTorre.length != 0) {
+                        if (dirTorre.length != 0) {
+                            if (dueLocal.length != 0) {
+                                if ($.isNumeric(telefono)) {
+                                    return true;
+                                } else {
+                                    Swal.fire("Solo se aceptan numeros");
+                                    return false; }
+                            } else {
+                                Swal.fire("dueño local vacio");
+                                return false;
+                            }
+                        } else {
+                            Swal.fire("direccion vacio");
+                            return false;
+                        }
+                    } else {
+                        Swal.fire("nombre vacio");
+                        return false;
+                    }
+                }
                 function registrarTorre() {
                     $('#btnRegistrar').click(function (e) {
                         e.preventDefault();
-                        var data = $('#form').serialize();
-                        $.ajax({
-                            type: "POST",
-                            url: "AgregarTorres",
-                            data: data,
-                            success: function (response) {
-                                $("#modalRegistro").modal('hide');
-                                if (response == "TRUE") {
-                                    Swal.fire({
-                                        icon: 'success',
-                                        title: 'Buen trabajo',
-                                        text: "Torre registrado correctamente",
-                                    }).then((result) => {
-                                        if (result.isConfirmed) {
-                                            listarTorres();
-                                        }
-                                    })
-                                } else {
-                                    Swal.fire({
-                                        icon: 'error',
-                                        title: 'ERROR',
-                                        text: "Torre no se puede registrar",
-                                    }).then((result) => {
-                                        if (result.isConfirmed) {
-                                            listarTorres();
-                                        }
-                                    })
+                        var nomTorre = $("#nomTorre").val();
+                        var dirTorre = $("#dirTorre").val();
+                        var dueLocal = $("#dueLocal").val();
+                        var telefono = $("#telefono").val();
+                        if (validarFormulario(nomTorre,dirTorre,dueLocal,telefono)) {
+                            var data = $('#form').serialize();
+                            $.ajax({
+                                type: "POST",
+                                url: "AgregarTorres",
+                                data: data,
+                                success: function (response) {
+                                    $("#modalRegistro").modal('hide');
+                                    if (response == "TRUE") {
+
+                                        Swal.fire({
+                                            icon: 'success',
+                                            title: 'Buen trabajo',
+                                            text: "Torre registrado correctamente",
+                                        }).then((result) => {
+                                            if (result.isConfirmed) {
+                                                listarTorres();
+                                            }
+                                        })
+                                    } else {
+                                        Swal.fire({
+                                            icon: 'error',
+                                            title: 'ERROR',
+                                            text: "Torre no se puede registrar",
+                                        }).then((result) => {
+                                            if (result.isConfirmed) {
+                                                listarTorres();
+                                            }
+                                        })
+                                    }
                                 }
-                            }
-                        });
+                            });
+                        }
+
                     });
                 }
                 function actualizarTorre() {
@@ -129,6 +202,7 @@
                             success: function (response) {
                                 $("#modalRegistro").modal('hide');
                                 if (response == "TRUE") {
+                                    $("#modalUpdate").modal('hide');
                                     Swal.fire({
                                         icon: 'success',
                                         title: 'Buen trabajo',
@@ -155,7 +229,6 @@
                 }
                 listarTorres();
                 registrarTorre();
-                actualizarTorre();
             });
         </script>
         <style type="text/css">
@@ -317,10 +390,10 @@
                     </div>	
                     <div class="menu">
                         <ul>
-                            <li><a href="principal.jsp">Inicio</a></li>
-                            <li><a href="personal.jsp">Personal</a></li>
-                            <li><a href="usuarios.jsp">Usuarios</a></li>
-                            <li class="dropdown">
+                            <li id="principal" style="display: none"><a href="principal.jsp">Inicio</a></li>
+                            <li id="personal" style="display: none"><a href="personal.jsp">Personal</a></li>
+                            <li id="usuario" style="display: none"><a href="usuarios.jsp">Usuarios</a></li>
+                            <li id="registro" style="display: none" class="dropdown">
                                 <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                     Registro
                                 </a>
@@ -330,7 +403,7 @@
                                     <a class="dropdown-item" href="pagos.jsp">Pagos</a>
                                 </ul>
                             </li>
-                            <li class="dropdown">
+                            <li id="mantenimiento" style="display: none" class="dropdown">
                                 <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                     Mantenimiento
                                 </a>
@@ -340,7 +413,7 @@
                                     <a class="dropdown-item" href="antena.jsp">Antena</a>
                                 </ul>
                             </li>
-                            <li class="dropdown">
+                            <li id="reporte" style="display: none" class="dropdown">
                                 <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                     Reportes
                                 </a>
@@ -362,33 +435,28 @@
             <div class="modal-dialog" role="document">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <%if (torre == null) {%>
-                        <h5 class="modal-title" id="exampleModalLabel">Registro de Personal</h5>
-                        <%} else {%>
-                        <h5 class="modal-title" id="exampleModalLabel">Edicion de Personal</h5>
-                        <%}%>
+                        <h5 class="modal-title" id="exampleModalLabel">Registro de Torre</h5>
                         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                             <span aria-hidden="true">&times;</span>
                         </button>
                     </div>
-                    <%if (torre == null) {%>
                     <form  id="form" action="AgregarAntena" method="POST">
                         <div class="modal-body">
                             <div class="form-group">
                                 <label for="nombre" style="color: black">Ingrese su nombre de torre:</label>
-                                <input name="nomTorre" style="color: black" type="text" placeholder="Nombre Torre" class="field" required>
+                                <input id="nomTorre" name="nomTorre" style="color: black" type="text" placeholder="Nombre Torre" class="field" required>
                             </div>
                             <div class="form-group">
                                 <label for="nombre" style="color: black">Ingrese la direccion de la torre:</label>
-                                <input name="dirTorre" style="color: black" type="text" placeholder="Direccion" class="field" required> 
+                                <input id ="dirTorre" name="dirTorre" style="color: black" type="text" placeholder="Direccion" class="field" required> 
                             </div>
                             <div class="form-group">
                                 <label for="nombre" style="color: black">Ingrese nombre del dueño local:</label>
-                                <input name="dueLocal" style="color: black" type="text" placeholder="Dueño Local" class="field" required>
+                                <input id="dueLocal" name="dueLocal" style="color: black" type="text" placeholder="Dueño Local" class="field" required>
                             </div>
                             <div class="form-group">
                                 <label for="nombre" style="color: black">Ingrese un telefono de referencia:</label>
-                                <input name="telefono" style="color: black" type="text" placeholder="Telefono" class="field" required> 
+                                <input id="telefono" name="telefono" style="color: black" type="text" placeholder="Telefono" class="field" required> 
                             </div>
                         </div>
 
@@ -397,36 +465,10 @@
                             <button type="button" class="btn btn-warning" style="float: right; color: white;" id="btnRegistrar">Registrar</button>
                         </div>
                     </form>
-                    <%} else {%>
-                    <form  id="formUp" action="ActualizarAntena" method="POST">
-                        <div class="modal-body">
-                            <div class="form-group">
-                                <label for="nombre" style="color: black">Ingrese nombre de la torre:</label>
-                                <input name="nomTorre" style="color: black" type="text" placeholder="Nombre Torre" value="<%=torre.getNombreTorre()%>" class="field" required>
-                                <input type="hidden" name="idTorre" value="<%=torre.getIdTorre()%>">
-                            </div>
-                            <div class="form-group">
-                                <label for="nombre" style="color: black">Ingrese su direccion:</label>
-                                <input name="dirTorre" style="color: black" type="text" placeholder="Direccion" value="<%=torre.getDireccion()%>" class="field" required> 
-                            </div>
-                            <div class="form-group">
-                                <label for="nombre" style="color: black">ingrese nombre del dueño:</label>
-                                <input name="dueLocal" style="color: black" type="text" placeholder="Dueño Local" value="<%=torre.getDueñoLocal()%>"class="field" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="nombre" style="color: black">Ingrese telefono de referencia:</label>
-                                <input name="telefono" style="color: black" type="text" placeholder="Telefono" value="<%=torre.getTelefono()%>" class="field" required>
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
-                            <button type="button" class="btn btn-warning" style="float: right; color: white;" id="btnActualizar">Actualizar</button>
-                        </div>
-                    </form>
-                    <%}%>
                 </div>
             </div>
         </div>  
+        <div  id="modalUpdate" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true"></div>
         <div class="main">
             <div class="wrap">
                 <div class="plans">

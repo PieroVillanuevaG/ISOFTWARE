@@ -4,6 +4,7 @@ modelo\Pago.class
 modelo\Servidor.class
 modelo\Servicio.class
 controlador\Torre_srv.class
+dao\Reportedao.class
 dao\Usuariodao.class
 dao\EstadoClientedao.class
 dao\TipoAntenadao.class
@@ -36,4 +37,5 @@ dao\Antenadao.class
 dao\Clientedao.class
 controlador\Pago_srv.class
 modelo\Usuario.class
+modelo\Reporte.class
 modelo\Antena.class

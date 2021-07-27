@@ -5,6 +5,7 @@
  */
 package controlador;
 
+import dao.Antenadao;
 import dao.Clientedao;
 import dao.Pagodao;
 import dao.Serviciodao;
@@ -17,6 +18,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import modelo.Antena;
 import modelo.Cliente;
 import modelo.Fecha;
 import modelo.Pago;
@@ -27,7 +29,7 @@ import modelo.Usuario;
  *
  * @author PIERO
  */
-@WebServlet(name = "Pago_srv", urlPatterns = {"/Pago_srv", "/ListarPagos", "/EditarPagos", "/ActualizarPagos", "/EliminarPagos", "/AgregarPagos", "/BuscarCliente"})
+@WebServlet(name = "Pago_srv", urlPatterns = {"/Pago_srv", "/ListarPagos", "/EditarPagos", "/ActualizarPagos", "/EliminarPagos", "/AgregarPagos", "/BuscarCliente", "/DetallePago"})
 public class Pago_srv extends HttpServlet {
 
     Pago pago = new Pago();
@@ -66,7 +68,7 @@ public class Pago_srv extends HttpServlet {
                 out.write("<tr>");
                 out.write("<td class=\"plan_list_title\">" + i + "</td>\n"
                         + "                                    <td class=\"plan_list_title\">" + cliente.getNombre() + " " + cliente.getApellidoPaterno() + "</td>\n"
-                        + "                                    <td class=\"price_body\">" + pago.getMonto() + "</td>\n"
+                        + "                                    <td class=\"price_body\">" + pago.getMonto() +" "+"soles"+ "</td>\n"
                         + "                                    <td class=\"price_body\">" + pago.getFechaPago() + "</td>\n"
                         + "                                    <td>\n"
                         + "                                        <div class=\"dropdown\">\n"
@@ -74,8 +76,7 @@ public class Pago_srv extends HttpServlet {
                         + "                                                Seleccione Accion\n"
                         + "                                            </button>\n"
                         + "                                            <div class=\"dropdown-menu dropdown-menu-right\" aria-labelledby=\"dropdownMenuButton\">\n"
-                        + "                                                <a id='btnEditar' class=\"dropdown-item\" href='EditarPagos?id=" + pago.getIdPago() + "' title=\"Editar\">Editar</a>\n"
-                        + "                                                <a id='btnEliminar' class=\"dropdown-item\" href='EliminarPagos?id=" + pago.getIdPago() + "' title=\"Eliminar\">Eliminar</a>\n"
+                        + "                                                <a id='btnDetalle' class=\"dropdown-item\" href='" + pago.getIdPago() + "' title=\"Editar\">Detalle Servicio</a>\n"
                         + "\n"
                         + "                                            </div>\n"
                         + "                                        </div>\n"
@@ -83,6 +84,50 @@ public class Pago_srv extends HttpServlet {
                 out.write("</tr>");
             }
             out.write("</tbody>");
+        }
+        if (path.equals("/DetallePago")) {
+            int id = Integer.parseInt(request.getParameter("id"));
+            Pago pago = Pagodao.listarPagosID(id);
+            Servicio servicio = Serviciodao.listarServiciosCodCliente(pago.getIdCliente());
+            Cliente cliente = Clientedao.listarClienteId(servicio.getIdCliente());
+            Antena antena = Antenadao.listarAntenasId(servicio.getIdAntena());
+            out.write("<div class=\"modal-dialog\" role=\"document\">\n"
+                    + "                <div class=\"modal-content\">\n"
+                    + "                    <div class=\"modal-header\">\n"
+                    + "                        <h5 class=\"modal-title\" id=\"exampleModalLabel\">Detalle de Pago</h5>\n"
+                    + "                        <button type=\"button\" class=\"close\" data-dismiss=\"modal\" aria-label=\"Close\" id=\"btnExit1\">\n"
+                    + "                            <span aria-hidden=\"true\">&times;</span>\n"
+                    + "                        </button>\n"
+                    + "                    </div>\n"
+                    + "                    <form  id=\"form\" action=\"AgregarAntena\" method=\"POST\">\n"
+                    + "                        <div class=\"modal-body\">\n"
+                    + "                            <div class=\"form-group\">\n"
+                    + "                                <label for=\"nombre\" style=\"color: black\">Cliente : " + cliente.getNombre() + " " + cliente.getApellidoPaterno() + "</label>\n"
+                    + "                            </div>\n"
+                    + "                            <div class=\"form-group\">\n"
+                    + "                                <label for=\"nombre\" style=\"color: black\">Antena: " + antena.getNombreAntena() + "</label>\n"
+                    + "                            </div>\n"
+                    + "                            <div class=\"form-group\">\n"
+                    + "                                <label for=\"nombre\" style=\"color: black\">Frecuencia: " + servicio.getFrecuencia() + "</label>\n"
+                    + "                            </div>\n"
+                    + "                            <div class=\"form-group\">\n"
+                    + "                                <label for=\"nombre\" style=\"color: black\">Ancho de Banda: " + servicio.getAnchoBanda() + "</label>\n"
+                    + "                            </div>\n"
+                    + "                            <div class=\"form-group\">\n"
+                    + "                                <label for=\"nombre\" style=\"color: black\">Condicion de la antena: " + servicio.getCondicionAntena() + "</label>\n"
+                    + "                            </div>\n"
+                    + "                            <div class=\"form-group\">\n"
+                    + "                                <label for=\"nombre\" style=\"color: black\">Dni: " + cliente.getDNI() + "</label>\n"
+                    + "                            </div>\n"
+                    + " <div class=\"form-group\">\n"
+                    + "                                <label for=\"nombre\" style=\"color: black\">Periodo : " + pago.getP_inicial() + " - " + pago.getP_final() + " </label>\n"
+                    + "                            </div>\n"
+                    + "                        <div class=\"modal-footer\">\n"
+                    + "                            <button type=\"button\" class=\"btn btn-primary\" data-dismiss=\"modal\" id=\"btnClose1\">Close</button>\n"
+                    + "                        </div>\n"
+                    + "                    </form>\n"
+                    + "                </div>\n"
+                    + "            </div>");
         }
         if (path.equals("/EditarPagos")) {
             int id = Integer.parseInt(request.getParameter("id"));
@@ -117,28 +162,32 @@ public class Pago_srv extends HttpServlet {
             float monto = Float.parseFloat(request.getParameter("monto"));
             HttpSession s = request.getSession();
             Usuario us = (Usuario) s.getAttribute("us");
-            pago.setIdPersonal(us.getIdPersonal());
-            pago.setMonto(monto);
-            pago.setP_inicial(servicio.getF_inicio());
-            pago.setP_final(servicio.getF_vencimiento());
-            pago.setIdCliente(servicio.getIdCliente());
-            pago.setFechaPago(Fecha.fecha_actual());
-            if (Pagodao.insertarPago(pago)) {
-                double suma = 0;
-                ArrayList<Pago> lista = Pagodao.PagosFechaInicio(servicio.getIdCliente(), servicio.getF_inicio());
-                for (Pago pago1 : lista) {
-                    suma = pago1.getMonto()+suma;
-                }
-                if(suma==servicio.getTarifa()){
-                    if(Serviciodao.actualizarFechas(servicio.getIdServicio())){
-                        System.out.println("Se cambio la fecha");
-                    }else{
-                        System.out.println("No se cambio la fecha aun");
+            if (monto <= servicio.getTarifa()) {
+                pago.setIdPersonal(us.getIdPersonal());
+                pago.setMonto(monto);
+                pago.setP_inicial(servicio.getF_inicio());
+                pago.setP_final(servicio.getF_vencimiento());
+                pago.setIdCliente(servicio.getIdCliente());
+                pago.setFechaPago(Fecha.fecha_actual());
+                if (Pagodao.insertarPago(pago)) {
+                    double suma = 0;
+                    ArrayList<Pago> lista = Pagodao.PagosFechaInicio(servicio.getIdCliente(), servicio.getF_inicio());
+                    for (Pago pago1 : lista) {
+                        suma = pago1.getMonto() + suma;
                     }
+                    if (suma == servicio.getTarifa()) {
+                        if (Serviciodao.actualizarFechas(servicio.getIdServicio())) {
+                            System.out.println("Se cambio la fecha");
+                        } else {
+                            System.out.println("No se cambio la fecha aun");
+                        }
+                    } 
+                    out.write("TRUE");
+                } else {
+                    out.write("FALSE");
                 }
-                out.write("TRUE");
             } else {
-                out.write("FALSE");
+                out.write("MFALSE");
             }
         }
         if (path.equals("/BuscarCliente")) {
@@ -151,13 +200,11 @@ public class Pago_srv extends HttpServlet {
                 for (Pago pago1 : lista) {
                     monto = pago1.getMonto() + monto;
                 }
-                out.write("<label for=\"nombre\" style=\"color: black\">Cliente:</label>");
-                out.write("<input style=\"color: black\" type='text' disabled value='" + cliente.getNombre() + " " + cliente.getApellidoPaterno() + "'><br>");
-                out.write("<label for=\"nombre\" style=\"color: black\">Periodo:</label>");
-                out.write("<input style=\"color: black;width:300px\" type='text' disabled value='" + servicio.getF_inicio() + " a " + servicio.getF_vencimiento() + "'><br>");
-                out.write("<label for=\"nombre\" style=\"color: black\">Monto Restante:</label>");
-                out.write("<input style=\"color: black;width:300px\" type='text' disabled value='" + (servicio.getTarifa() - monto) + "  " + "Soles" + "'>");
-            }else{
+                out.write("<label for=\"nombre\" style=\"color: black\">Cliente: " + cliente.getNombre() + " " + cliente.getApellidoPaterno() + " " + cliente.getApellidoMaterno() + "</label><br>");
+                out.write("<label for=\"nombre\" style=\"color: black\">Periodo: " + servicio.getF_inicio() + " a " + servicio.getF_vencimiento() + "</label><br>");
+                out.write("<input type='hidden' id='tarifaServicio' value='" + servicio.getTarifa() + "' ");
+                out.write("<label for=\"nombre\" style=\"color: black\">Monto Restante: " + (servicio.getTarifa() - monto) + "</label><br>");
+            } else {
                 out.write("FALSE");
             }
         }

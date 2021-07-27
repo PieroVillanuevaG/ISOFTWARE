@@ -66,6 +66,32 @@ public class Pagodao {
         }
         return lista;
     }
+    public static ArrayList<Pago> listarPagosFechas(String fechaInicio,String fechaFinal) {
+        ArrayList<Pago> lista = new ArrayList<Pago>();
+        Pago p = null;
+        Connection cn = conexion.conexion.abrir();
+
+        try {
+            PreparedStatement stm = cn.prepareStatement("select * from pago where fechaPago BETWEEN ? and ?");
+            stm.setString(1, fechaInicio);
+            stm.setString(2, fechaFinal);
+            ResultSet rs = stm.executeQuery();
+            while (rs.next()) {
+                p = new Pago();
+                p.setIdPago(rs.getInt("idPago"));
+                p.setFechaPago(rs.getString("fechaPago"));
+                p.setMonto(rs.getFloat("monto"));
+                p.setP_inicial(rs.getString("P_inicial"));
+                p.setP_final(rs.getString("P_final"));
+                p.setIdPersonal(rs.getInt("idPersonal"));
+                p.setIdCliente(rs.getInt("idCliente"));
+                lista.add(p);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return lista;
+    }
     public static ArrayList<Pago> PagosFechaInicio(int idCliente,String fecha) {
         ArrayList<Pago> lista = new ArrayList<Pago>();
         Pago p = null;

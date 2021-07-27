@@ -79,6 +79,26 @@
                     Personal p = Personaldao.listarPersonalXId(us.getIdPersonal());
                     TipoUsuario tp = TipoUsuariodao.listarTiposXId(us.getIdTipoUser());
         %>
+        <script type="text/javascript">
+            $(document).ready(function () {
+            <%if (us.getIdTipoUser() == 1) {%>
+                $("#usuario").show();
+                $("#principal").show();
+                $("#personal").show();
+                $("#mantenimiento").show();
+                $("#reporte").show();
+                $("#registro").show();
+            <%}%>
+            <%if (us.getIdTipoUser() == 2) {%>
+                $("#principal").show();
+                $("#registro").show();
+            <%}%>
+            <%if (us.getIdTipoUser() == 3) {%>
+                $("#principal").show();
+                $("#reporte").show();
+            <%}%>
+            });
+        </script>
         <div class="header">
             <div class="header_top">
                 <div class="wrap">		
@@ -87,10 +107,10 @@
                     </div>	
                     <div class="menu">
                         <ul>
-                            <li class="active"><a href="principal.jsp">Inicio</a></li>
-                            <li><a href="personal.jsp">Personal</a></li>
-                            <li><a href="usuarios.jsp">Usuarios</a></li>
-                            <li class="dropdown">
+                            <li id="principal" class="active" style="display: none"><a href="principal.jsp">Inicio</a></li>
+                            <li id="personal" style="display: none"><a href="personal.jsp">Personal</a></li>
+                            <li id="usuario" style="display: none"><a href="usuarios.jsp">Usuarios</a></li>
+                            <li id="registro" style="display: none" class="dropdown">
                                 <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                     Registro
                                 </a>
@@ -100,7 +120,7 @@
                                     <a class="dropdown-item" href="pagos.jsp">Pagos</a>
                                 </ul>
                             </li>
-                            <li class="dropdown">
+                            <li id="mantenimiento" style="display: none" class="dropdown">
                                 <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                     Mantenimiento
                                 </a>
@@ -110,7 +130,7 @@
                                     <a class="dropdown-item" href="antena.jsp">Antena</a>
                                 </ul>
                             </li>
-                            <li class="dropdown">
+                            <li id="reporte" style="display: none" class="dropdown">
                                 <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                     Reportes
                                 </a>
@@ -190,7 +210,7 @@
                                     <li>512 Kbps</li>
                                     <li>FRECUENCIA</li>
                                     <li>2.4 GHZ</li>
-                                    <li><a href="Cliente_srv?menu=Cliente&accion=Listar&banda=512 Kbps&frec=2.4 GHz">Comprar</a></li>
+                                    <li></li>
                                 </ul>
                             </li>
                             <li>
@@ -200,7 +220,7 @@
                                     <li>1 Mbps</li>
                                     <li>FRECUENCIA</li>
                                     <li>2.4 GHZ</li>
-                                    <li><a href="Cliente_srv?menu=Cliente&accion=Listar&banda=1 Mbps&frec=2.4 GHz" >Comprar</a></li>
+                                    <li></li>
                                 </ul>
                             </li>               
                             <li>
@@ -210,7 +230,7 @@
                                     <li>1 Mbps</li>
                                     <li>FRECUENCIA</li>
                                     <li>5.8 GHZ</li>
-                                    <li><a href="Cliente_srv?menu=Cliente&accion=Listar&banda=1 Mbps&frec=5.8 GHz" >Comprar</a></li>
+                                    <li></li>
                                 </ul>
                             </li>        
                             <li>
@@ -220,7 +240,7 @@
                                     <li>2 Mbps</li>
                                     <li>FRECUENCIA</li>
                                     <li>5.8 GHZ</li>
-                                    <li><a href="Cliente_srv?menu=Cliente&accion=Listar&banda=2 Mbps&frec=5.8 GHz" >Comprar</a></li>
+                                    <li></li>
                                 </ul>
                             </li>   
                             <div class="clear"></div>          

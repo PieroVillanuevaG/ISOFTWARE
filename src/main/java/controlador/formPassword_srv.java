@@ -47,9 +47,8 @@ public class formPassword_srv extends HttpServlet {
         PrintWriter out = response.getWriter();
         String path = request.getServletPath();
         String context = request.getContextPath();
-        System.out.println(context);
         if (path.equals("/RecuperarContraseña")) {
-            String email = request.getParameter("email");
+            String email = request.getParameter("email").toUpperCase();
             String asunto = "Formulario de Reestablecimiento de contraseña";
             Personal p = Personaldao.validarCorreo(email);
             Usuario us = Usuariodao.listarUsuarioXIdPersonal(p.getIdPersonal());
@@ -62,15 +61,18 @@ public class formPassword_srv extends HttpServlet {
                 properties.put("mail.smtp.user", "thepieritoxp255@gmail.com");
                 properties.put("mail.smtp.clave", "pierovg159");
                 properties.put("mail.smtp.auth", "true");
+                properties.put("mail.smtp.socketFactory.port", "587");
+                properties.put("mail.smtp.socketFactory.fallback", "false");
                 properties.put("mail.smtp.starttls.enable", "true");
+                properties.put("mail.smtp.debug", "true");
                 properties.put("mail.smtp.port", "587");
-                properties.put("mail.smtp.ssl.trust", "smtp.gmail.com");
+                properties.put("mail.smtp.ssl.trust", "*");
                 Session mailSession = Session.getDefaultInstance(properties, null);
                 MimeMessage message = new MimeMessage(mailSession);
                 try {
                     message.setFrom(new InternetAddress(de));
                     message.addRecipient(Message.RecipientType.TO, new InternetAddress(email));
-                    String messageHTML = "<form action='http://localhost:8083/IS_villaflashnet/formReestablecimiento.jsp' method='post'><input type='hidden' name='idUsuario' value='" + us.getIdUsuario() + "'><button type='submit'>Reestablecer</button></form>";
+                    String messageHTML = "<h1>HOLA</h1>";
                     message.setSubject(asunto);
                     message.setContent(messageHTML, "text/html; charset=utf-8");
                     Transport transport = mailSession.getTransport("smtp");
@@ -79,14 +81,14 @@ public class formPassword_srv extends HttpServlet {
                     transport.close();
                     result = "Mensaje enviado";
                     out.write("TRUE");
-                    
+
                 } catch (MessagingException ex) {
                     ex.printStackTrace();
                     result = "Error";
-                    out.write("FALSE");
+                    out.write("FALSE 1" + ex.getMessage() + p.getNombre());
                 }
             } else {
-                out.write("FALSE");
+                out.write("FALSE 2");
             }
         }
         if (path.equals("/ReestablecerContraseña")) {
@@ -97,7 +99,7 @@ public class formPassword_srv extends HttpServlet {
             } else {
                 out.write("FALSE");
             }
-            
+
         }
     }
 
